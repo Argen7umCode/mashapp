@@ -38,15 +38,31 @@ class DAL:
         query = select(table).where(field == value)
         return (await self._make_query_and_get_all(query))
 
+    async def _get_by_id(self, id: UUID, ):
+        return await self._get_one_by_field_value(User, User.user_id, user_id)
+    
+    async def id_user_exists(self, 
+                             user_id: UUID,) -> bool:
+        item = await self.get_by_id(user_id)
+        return item is not None
+    
+
 
 class UserDAL(DAL):
+
+    async def id_user_exists(self, 
+                             user_id: UUID,) -> bool:
+        user = await self.get_user_by_id(user_id)
+        return user is not None
+
+
     async def create_user(
         self, name: str, 
         username: str, 
         email: str, 
         is_active: bool, 
         hashed_password: str, 
-        mashups: list 
+        mashups: list
     ) -> User:
         new_user = User(
             name = name,
@@ -87,6 +103,7 @@ class UserDAL(DAL):
         return await self._make_query_and_get_one(query)
     
 class MashupDAL(DAL):
+
     async def create_mashup(
         self, name: str, 
         audio_id: bytes, 
@@ -106,7 +123,7 @@ class MashupDAL(DAL):
     async def get_mashup_by_id(self, mashup_id: UUID) -> Mashup:
         return await self._get_one_by_field_value(Mashup, Mashup.mashup_id, mashup_id)
 
-    async def get_sources_by_name(self, name: str) -> Mashup:
+    async def get_mashups_by_name(self, name: str) -> Mashup:
         return await self._get_one_by_field_value(Mashup, Mashup.name, name)
    
     async def get_mashups_by_user_id(self, user_id: UUID) -> List[Mashup]:
