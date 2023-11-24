@@ -11,6 +11,7 @@ class CreateUserRequest(TunedModel):
 
 
 class GetUserRequest(TunedModel):
+    user_id: Optional[UUID] = None
     email: Optional[EmailStr] = None
     mashup_id: Optional[UUID] = None
 

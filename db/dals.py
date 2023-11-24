@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import Any, List, Union
 
 from uuid import UUID
 from sqlalchemy import and_, select, update
@@ -10,7 +10,7 @@ from db.models import mashup_source_link_table, author_source_link_table
 
 
 class DAL:
-    def __init__(self, db_session: AsyncSession):
+    def __init__(self, db_session: AsyncSession) -> None:
         self.db_session = db_session
 
     async def _create(self, new_item) -> Base:
@@ -30,32 +30,25 @@ class DAL:
         if row is not None:
             return row     
     
-    async def _get_all_by_field_value(self, table, field, value):
+    async def _get_all_by_field_value(self, table: Base, field, value: Any) :
         query = select(table).where(field == value)
         return (await self._make_query_and_get_all(query))
 
-    async def _get_one_by_field_value(self, table, field, value):
+    async def _get_one_by_field_value(self, table: Base, field, value):
         query = select(table).where(field == value)
         return (await self._make_query_and_get_all(query))
 
-    async def _get_by_id(self, id: UUID, ):
-        return await self._get_one_by_field_value(User, User.user_id, user_id)
+    async def _get_by_id(self, id: UUID, table):
+        return await self._get_one_by_field_value(table, table.user_id, id)
     
-    async def id_user_exists(self, 
-                             user_id: UUID,) -> bool:
-        item = await self.get_by_id(user_id)
-        return item is not None
+    async def is_exists(self, 
+                        id: UUID) -> bool:
+        item = await self.get_by_id(id)
+        return item if item is not None else False
     
 
 
 class UserDAL(DAL):
-
-    async def id_user_exists(self, 
-                             user_id: UUID,) -> bool:
-        user = await self.get_user_by_id(user_id)
-        return user is not None
-
-
     async def create_user(
         self, name: str, 
         username: str, 
@@ -74,8 +67,8 @@ class UserDAL(DAL):
         )
         return await self._create(new_user)
         
-    async def get_user_by_id(self, user_id: UUID) -> Union[User, None]:
-        return await self._get_one_by_field_value(User, User.user_id, user_id)
+    async def get_by_id(self, user_id: UUID) -> Union[User, None]:
+        return await self._get_by_id(user_id, User)
 
     async def get_user_by_mashup_id(self, mashup_id: UUID) -> Union[User, None]:
         query = select(User).join(Mashup).where(Mashup.mashup_id == mashup_id)
@@ -108,20 +101,20 @@ class MashupDAL(DAL):
         self, name: str, 
         audio_id: bytes, 
         user_id: UUID, 
-        is_active: bool,
         sources: list
-    ) -> User:
+    ) -> Mashup:
         new_mashup = Mashup(
             name = name,
             audio_id = audio_id,
             user_id = user_id,
-            is_active = is_active,
+            is_active = True,
             sources = sources
         )
         return await self._create(new_mashup)
     
-    async def get_mashup_by_id(self, mashup_id: UUID) -> Mashup:
-        return await self._get_one_by_field_value(Mashup, Mashup.mashup_id, mashup_id)
+    async def get_by_id(self, mashup_id: UUID) -> Mashup:
+                return await self._get_by_id(mashup_id, Mashup)
+
 
     async def get_mashups_by_name(self, name: str) -> Mashup:
         return await self._get_one_by_field_value(Mashup, Mashup.name, name)
@@ -175,8 +168,8 @@ class SourceDAL(DAL):
         )
         return await self._create(new_source)
 
-    async def get_source_by_id(self, source_id: UUID) -> Source:
-        return await self._get_one_by_field_value(Source, Source.source_id, source_id)
+    async def get_by_id(self, source_id: UUID) -> Source:
+        return await self._get_by_id(source_id, Source)
     
     async def get_sources_by_mashup_id(self, mashup_id: UUID) -> Source:
         query = select(Source)\
@@ -224,8 +217,8 @@ class AuthorDAL(DAL):
         )
         self._create(new_author)
 
-    async def get_author_by_id(self, author_id: UUID) -> Author:
-        return await self._get_one_by_field_value(Author, Author.author_id, author_id)
+    async def get_by_id(self, author_id: UUID) -> Author:
+        return await self._get_by_id(author_id, Author)
 
     async def get_author_by_source_id(self, source_id: UUID) -> Author:
         query = select(Author)\
@@ -253,17 +246,16 @@ class AuthorDAL(DAL):
     
 class AudioDAL(DAL):
     async def create_audio(
-        self, audio: bytes,
-        mashups: list
+        self, audio: bytes
     ) -> Audio:
         new_audio = Audio(
             audio = audio,
-            mashups = mashups)
+            mashups = [])
         return await self._create(new_audio)
     
-    async def get_audio_by_id(self, audio_id: UUID) -> Audio:
-        return await self._get_one_by_field_value(Audio, Audio.audio_id, audio_id)
-    
+    async def get_by_id(self, audio_id: UUID) -> Audio:
+        return await self._get_by_id(audio_id, Audio)    
+
     async def get_audio_by_mashup_id(self, mashup_id: UUID) -> Audio:
         query = select(Audio).join(Mashup).filter(Mashup.mashup_id == mashup_id)
         return await self._make_query_and_get_one(query)
