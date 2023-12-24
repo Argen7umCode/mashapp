@@ -86,7 +86,7 @@ async def _delete_user(body: DeleteUserRequest,
         user_dal = UserDAL(session)
         user_id = await user_dal.delete_user(body.user_id)
     
-    return DeleteUserResponse(deleted_user_id =u ser_id)
+    return DeleteUserResponse(deleted_user_id =user_id)
 
 
 async def _update_user(new_data: UpdateUserRequest, 
