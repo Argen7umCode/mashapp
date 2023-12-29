@@ -7,7 +7,6 @@ from sqlalchemy.orm import sessionmaker
 from config import DB_PATH
 
 
-
 engine = create_async_engine(
     DB_PATH,
     future=True,
