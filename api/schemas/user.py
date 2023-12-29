@@ -1,9 +1,15 @@
+from typing import List, TYPE_CHECKING
+
 from api.schemas import TunedModel, EmailStr
 from api.schemas import Optional, BaseModel, constr
 
 
+if TYPE_CHECKING:
+    from api.schemas.mashup import ShowMashup
+
+
 class CreateUserRequest(TunedModel):
-    user_id: int
+    id: int
     name: str
     username: str
     email: EmailStr
@@ -11,21 +17,25 @@ class CreateUserRequest(TunedModel):
 
 
 class GetUserRequest(TunedModel):
-    user_id: Optional[int] = None
+    id: Optional[int] = None
     email: Optional[EmailStr] = None
     mashup_id: Optional[int] = None
 
 
 class ShowUser(TunedModel):
-    user_id: int
+    id: int
     name: str
     username: str
     email: EmailStr
     is_active: bool
 
 
+class ShowUserWithRel(ShowUser):
+    mashups: "List[ShowMashup]"
+
+
 class UpdatedUserResponse(BaseModel):
-    updated_user_id: int
+    id: int
 
 
 class UpdateUserRequest(BaseModel):
@@ -35,8 +45,8 @@ class UpdateUserRequest(BaseModel):
 
 
 class DeleteUserResponse(BaseModel):
-    deleted_user_id: int
+    id: int
 
 
 class DeleteUserRequest(BaseModel):
-    user_id: int
+    id: int

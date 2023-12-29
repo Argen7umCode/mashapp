@@ -1,6 +1,11 @@
-from typing import List
+from typing import TYPE_CHECKING, List
 from api.schemas import TunedModel
 from api.schemas import Optional, BaseModel
+
+
+if TYPE_CHECKING:
+    from api.schemas.user import ShowUser
+    from api.schemas.source import ShowSource
 
 
 class CreateMashupRequest(TunedModel):
@@ -11,23 +16,22 @@ class CreateMashupRequest(TunedModel):
 
 
 class GetMashupRequest(TunedModel):
-    mashup_id: Optional[int] = None
+    id: Optional[int] = None
     name: Optional[str] = None
     user_id: Optional[int] = None
     source_id: Optional[int] = None
 
 
 class ShowMashup(TunedModel):
-    mashup_id: int
+    id: int
     name: str
     audio_id: int
     is_active: bool
-    user_id: int
-    sources_ids: List[int]
 
 
-class ShowMashups(TunedModel):
-    mashups: List[ShowMashup]
+class ShowMashupWithRel(ShowMashup):
+    user: "ShowUser"
+    sources: "List[ShowSource]"
 
 
 class UpdateMashupRequest(BaseModel):
@@ -36,12 +40,12 @@ class UpdateMashupRequest(BaseModel):
 
 
 class UpdateMashupResponse(BaseModel):
-    updated_mashup_id: int
+    id: int
 
 
 class DeleteMashupRequest(BaseModel):
-    mashup_id: int
+    id: int
 
 
 class DeleteMahsupResponse(BaseModel):
-    deleted_mashup_id: int
+    id: int
