@@ -1,6 +1,6 @@
 from typing import List, Annotated
 
-from sqlalchemy import Column, Boolean, Integer, String, Table, LargeBinary
+from sqlalchemy import Column, LargeBinary, Table
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import relationship
@@ -28,6 +28,14 @@ is_active = Annotated[bool, mapped_column(default=True)]
 audio = Annotated[bytes, mapped_column(LargeBinary, nullable=False)]
 
 
+MashupSourceLink = Table(
+    "mashup_source_table",
+    Base.metadata,
+    Column("mashup_id", ForeignKey("mashups.id"), primary_key=True),
+    Column("source_id", ForeignKey("sources.id"), primary_key=True),
+)
+
+
 class User(Base):
     __tablename__ = "users"
 
@@ -49,11 +57,11 @@ class Mashup(Base):
     is_active: Mapped[is_active]
     audio: Mapped[audio]
 
-    user_id: Mapped[audio] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
 
     user: Mapped["User"] = relationship(back_populates="mashups")
     sources: Mapped[List["Source"]] = relationship(
-        secondary="MashupSourceLink", back_populates="mashups"
+        back_populates="mashups", secondary="MashupSourceLink"
     )
 
 
@@ -64,18 +72,11 @@ class Source(Base):
     name: Mapped[nonnull_str]
     audio: Mapped[audio]
     is_active: Mapped[is_active]
-    author_id: Mapped[int] = mapped_column(ForeignKey("author.id", ondelete="CASCADE"))
+    author_id: Mapped[int] = mapped_column(ForeignKey("authors.id", ondelete="CASCADE"))
     author: Mapped["Author"] = relationship(back_populates="sources")
     mashups: Mapped[List["Source"]] = relationship(
-        secondary="MashupSourceLink", back_populates="sources"
+        back_populates="sources", secondary="MashupSourceLink"
     )
-
-
-class MashupSourceLink(Base):
-    __tablename__ = "mashup_source_link"
-
-    mashup_id: Mapped[int] = mapped_column(ForeignKey("mashups.id"), primary_key=True)
-    source_id: Mapped[int] = mapped_column(ForeignKey("sources.id"), primary_key=True)
 
 
 class Author(Base):
