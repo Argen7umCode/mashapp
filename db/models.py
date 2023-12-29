@@ -1,90 +1,87 @@
-from typing import List
+from typing import List, Annotated
 
-from sqlalchemy import Column, Boolean, String, Table, LargeBinary
+from sqlalchemy import Column, Boolean, Integer, String, Table, LargeBinary
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import Mapped
-from sqlalchemy.orm import declarative_base
-from sqlalchemy.dialects.postgresql import UUID
-import uuid
+from sqlalchemy.orm import DeclarativeBase
 
 
-Base = declarative_base()
+class Base(DeclarativeBase):
+    repr_cols_num = 3
+    repr_cols = tuple()
+
+    def __repr__(self):
+        cols = []
+        for idx, col in enumerate(self.__table__.columns.keys()):
+            if col in self.repr_cols or idx < self.repr_cols_num:
+                cols.append(f"{col}={getattr(self, col)}")
+
+        return f"<{self.__class__.__name__} {', '.join(cols)}>"
 
 
-mashup_source_link_table = Table('mashup_association', Base.metadata,
-    Column('source_id', UUID(as_uuid=True), ForeignKey('sources.source_id')),
-    Column('mashup_id', UUID(as_uuid=True), ForeignKey('mashups.mashup_id'))
-)
-
-author_source_link_table = Table('author_association', Base.metadata,
-    Column('source_id', UUID(as_uuid=True), ForeignKey('sources.source_id')),
-    Column('author_id', UUID(as_uuid=True), ForeignKey('authors.author_id'))
-)
-
-mashup_source_audio_link_table = Table('audio_association', Base.metadata,
-    Column('source_id', UUID(as_uuid=True), ForeignKey('sources.source_id')),
-    Column('audio_id', UUID(as_uuid=True), ForeignKey('audio.audio_id'))
-)
-
+primary_key_int = Annotated[int, mapped_column(primary_key=True)]
+unique_nonnull_str = Annotated[str, mapped_column(nullable=False, unique=True)]
+nonnull_str = Annotated[str, mapped_column(nullable=False)]
+is_active = Annotated[bool, mapped_column(default=True)]
+audio = Annotated[bytes, mapped_column(LargeBinary, nullable=False)]
 
 
 class User(Base):
-    __tablename__ = 'users'
+    __tablename__ = "users"
 
-    user_id:         Mapped[UUID] = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    name:            Mapped[str] = Column(String, nullable=False)
-    username:        Mapped[str] = Column(String, nullable=False, unique=True)
-    email:           Mapped[str] = Column(String, nullable=False, unique=True)
-    is_active:       Mapped[bool] = Column(Boolean(), default=True)
-    hashed_password: Mapped[str] = Column(String, nullable=False)
+    id: Mapped[primary_key_int]
+    name: Mapped[nonnull_str]
+    username: Mapped[unique_nonnull_str]
+    email: Mapped[unique_nonnull_str]
+    is_active: Mapped[is_active]
+    hashed_password: Mapped[nonnull_str]
 
-    mashups:         Mapped[List["Mashup"]] = relationship(back_populates="user")
-
-
-class Audio(Base):
-    __tablename__ = 'audio'
-
-    audio_id: Mapped[UUID] = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    audio:    Mapped[bytes] = Column(LargeBinary, nullable=False)
-
-    mashups:  Mapped[List["Mashup"]] = relationship(back_populates="audio")
+    mashups: Mapped[List["Mashup"]] = relationship(back_populates="user")
 
 
 class Mashup(Base):
-    __tablename__ = 'mashups'
-    
-    mashup_id:  Mapped[UUID] = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    name:       Mapped[str] = Column(String, nullable=False)
-    is_active:  Mapped[bool] = Column(Boolean(), default=True)
+    __tablename__ = "mashups"
 
-    audio_id:   Mapped[UUID] = mapped_column(ForeignKey('audio.audio_id'))
-    user_id:    Mapped[UUID] = mapped_column(ForeignKey('users.user_id'))
-    sources:    Mapped[List['Source']] = relationship(secondary=mashup_source_link_table, 
-                                                      back_populates="mashup")
+    id: Mapped[primary_key_int]
+    name: Mapped[nonnull_str]
+    is_active: Mapped[is_active]
+    audio: Mapped[audio]
+
+    user_id: Mapped[audio] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+
+    user: Mapped["User"] = relationship(back_populates="mashups")
+    sources: Mapped[List["Source"]] = relationship(
+        secondary="MashupSourceLink", back_populates="mashups"
+    )
 
 
 class Source(Base):
-    __tablename__ = 'sources'
+    __tablename__ = "sources"
 
-    source_id:  Mapped[UUID] = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    name:       Mapped[str] = Column(String, nullable=False)
-    is_active:  Mapped[bool] = Column(Boolean(), default=True)
+    id: Mapped[primary_key_int]
+    name: Mapped[nonnull_str]
+    audio: Mapped[audio]
+    is_active: Mapped[is_active]
+    author_id: Mapped[int] = mapped_column(ForeignKey("author.id", ondelete="CASCADE"))
+    author: Mapped["Author"] = relationship(back_populates="sources")
+    mashups: Mapped[List["Source"]] = relationship(
+        secondary="MashupSourceLink", back_populates="sources"
+    )
 
-    mashups:    Mapped[List[Mashup]] = relationship(secondary=mashup_source_link_table, 
-                                                      back_populates="source")
-    authors:    Mapped[List['Author']] = relationship(secondary=author_source_link_table, 
-                                                      back_populates="source")
+
+class MashupSourceLink(Base):
+    __tablename__ = "mashup_source_link"
+
+    mashup_id: Mapped[int] = mapped_column(ForeignKey("mashups.id"), primary_key=True)
+    source_id: Mapped[int] = mapped_column(ForeignKey("sources.id"), primary_key=True)
 
 
 class Author(Base):
-    __tablename__ = 'authors'
+    __tablename__ = "authors"
 
-    author_id: Mapped[UUID] = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    name:      Mapped[str] = Column(String, nullable=False)
-    is_active: Mapped[bool] = Column(Boolean(), default=True)
-
-    sources:   Mapped[List[Source]] = relationship(secondary=mashup_source_link_table, 
-                                                      back_populates="author")
-    
+    id: Mapped[primary_key_int]
+    name: Mapped[nonnull_str]
+    is_active: Mapped[is_active]
+    sources: Mapped[List["Source"]] = relationship(back_populates="author")

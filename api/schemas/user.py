@@ -1,9 +1,9 @@
-from api.schemas import TunedModel, UUID, EmailStr 
+from api.schemas import TunedModel, EmailStr
 from api.schemas import Optional, BaseModel, constr
 
 
 class CreateUserRequest(TunedModel):
-    user_id: UUID
+    user_id: int
     name: str
     username: str
     email: EmailStr
@@ -11,13 +11,13 @@ class CreateUserRequest(TunedModel):
 
 
 class GetUserRequest(TunedModel):
-    user_id: Optional[UUID] = None
+    user_id: Optional[int] = None
     email: Optional[EmailStr] = None
-    mashup_id: Optional[UUID] = None
+    mashup_id: Optional[int] = None
 
 
 class ShowUser(TunedModel):
-    user_id: UUID
+    user_id: int
     name: str
     username: str
     email: EmailStr
@@ -25,7 +25,7 @@ class ShowUser(TunedModel):
 
 
 class UpdatedUserResponse(BaseModel):
-    updated_user_id: UUID
+    updated_user_id: int
 
 
 class UpdateUserRequest(BaseModel):
@@ -35,9 +35,8 @@ class UpdateUserRequest(BaseModel):
 
 
 class DeleteUserResponse(BaseModel):
-    deleted_user_id: UUID
+    deleted_user_id: int
 
 
 class DeleteUserRequest(BaseModel):
-    user_id: UUID
-
+    user_id: int

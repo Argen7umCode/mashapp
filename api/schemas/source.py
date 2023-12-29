@@ -1,7 +1,6 @@
-from api.schemas import BaseModel, UUID, TunedModel, List
+from api.schemas import BaseModel, TunedModel, List
 
 
 class CreateRequestSource(TunedModel):
     name: str
-    authors: List[UUID]
-    
+    authors: List[int]

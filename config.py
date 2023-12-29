@@ -14,5 +14,3 @@ DB_PATH = "postgresql+asyncpg://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}".for
     DB_HOST=os.getenv("DB_HOST", "127.0.0.1:5432"),
     DB_NAME=os.getenv("DB_NAME", "postgres"),
 )
-
-

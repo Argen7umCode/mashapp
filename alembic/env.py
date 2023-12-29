@@ -9,6 +9,7 @@ from alembic import context
 
 from db.models import Base
 from config import DB_PATH
+
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
@@ -26,7 +27,7 @@ target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
-config.set_main_option('sqlalchemy.url', DB_PATH)
+config.set_main_option("sqlalchemy.url", DB_PATH)
 
 
 def run_migrations_offline() -> None:

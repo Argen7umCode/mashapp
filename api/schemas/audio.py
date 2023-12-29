@@ -1,4 +1,4 @@
-from api.schemas import TunedModel, UUID 
+from api.schemas import TunedModel
 from api.schemas import Optional, BaseModel
 
 
@@ -7,22 +7,26 @@ class CreateAudioRequest(TunedModel):
 
 
 class GetAudioRequest(TunedModel):
-    audio_id: Optional[UUID] = None
-    mashup_id: Optional[UUID] = None
+    audio_id: Optional[int] = None
+    mashup_id: Optional[int] = None
+
 
 class ShowAudio(TunedModel):
-    audio_id: UUID
+    audio_id: int
     audio: bytes
+
 
 class UpdateAudioRequest(BaseModel):
     audio: bytes
 
+
 class UpdateAudioResponse(BaseModel):
-    updated_audio_id: UUID
+    updated_audio_id: int
+
 
 class DeleteAudioRequest(BaseModel):
-    auido_id: UUID
+    auido_id: int
 
 
 class DeleteAudioResponse(BaseModel):
-    deleted_audio_id: UUID
+    deleted_audio_id: int
