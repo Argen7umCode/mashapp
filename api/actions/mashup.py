@@ -13,7 +13,6 @@ from api.schemas.mashup import (
 )
 from api.schemas.mashup import UpdateMashupRequest, UpdateMashupResponse
 from api.schemas.mashup import DeleteMahsupResponse, DeleteMashupRequest
-from api.actions.audio import _create_audio
 
 
 async def _create_mashup(
