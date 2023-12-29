@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 from typing import List, Annotated
 
 from sqlalchemy import Column, LargeBinary, Table
@@ -6,6 +7,12 @@ from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import DeclarativeBase
+
+from api.schemas.user import ShowUser, ShowUserWithRel
+from api.schemas.mashup import ShowMashup, ShowMashupWithRel
+from api.schemas.source import ShowSource, ShowSourceWithRel
+from api.schemas.author import ShowAuthor, ShowAuthorWithRel
+from api import BaseModel
 
 
 class Base(DeclarativeBase):
@@ -36,7 +43,12 @@ MashupSourceLink = Table(
 )
 
 
-class User(Base):
+class SchemaMixin:
+    def to_schema(self, schema: BaseModel) -> BaseModel:
+        return schema.model_validate(self, from_attributes=True)
+
+
+class User(Base, SchemaMixin):
     __tablename__ = "users"
 
     id: Mapped[primary_key_int]
@@ -48,8 +60,14 @@ class User(Base):
 
     mashups: Mapped[List["Mashup"]] = relationship(back_populates="user")
 
+    def to_schema_without_rel(self) -> ShowUser:
+        return self.to_schema(ShowMashup)
 
-class Mashup(Base):
+    def to_schema_with_rel(self) -> ShowUserWithRel:
+        return self.to_schema(ShowUserWithRel)
+
+
+class Mashup(Base, SchemaMixin):
     __tablename__ = "mashups"
 
     id: Mapped[primary_key_int]
@@ -64,8 +82,14 @@ class Mashup(Base):
         back_populates="mashups", secondary="MashupSourceLink"
     )
 
+    def to_schema_without_rel(self) -> ShowUser:
+        return self.to_schema(ShowMashup)
 
-class Source(Base):
+    def to_schema_with_rel(self) -> ShowMashupWithRel:
+        return self.to_schema(ShowMashupWithRel)
+
+
+class Source(Base, SchemaMixin):
     __tablename__ = "sources"
 
     id: Mapped[primary_key_int]
@@ -78,11 +102,23 @@ class Source(Base):
         back_populates="sources", secondary="MashupSourceLink"
     )
 
+    def to_schema_without_rel(self) -> ShowSource:
+        return self.to_schema(ShowSource)
 
-class Author(Base):
+    def to_schema_with_rel(self) -> ShowSourceWithRel:
+        return self.to_schema(ShowSourceWithRel)
+
+
+class Author(Base, SchemaMixin):
     __tablename__ = "authors"
 
     id: Mapped[primary_key_int]
     name: Mapped[nonnull_str]
     is_active: Mapped[is_active]
     sources: Mapped[List["Source"]] = relationship(back_populates="author")
+
+    def to_schema_without_rel(self) -> ShowAuthor:
+        return self.to_schema(ShowAuthor)
+
+    def to_schema_with_rel(self) -> ShowAuthorWithRel:
+        return self.to_schema(ShowAuthorWithRel)
