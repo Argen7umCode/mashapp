@@ -1,18 +1,18 @@
 from abc import ABC, abstractmethod
-from typing import List, Annotated
+from typing import List, Annotated, Optional, Union
 
 from sqlalchemy import Column, LargeBinary, Table
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import relationship
-from sqlalchemy.orm import Mapped
+from sqlalchemy.orm import Mapped, MappedAsDataclass
 from sqlalchemy.orm import DeclarativeBase
 
 from api.schemas.user import ShowUser, ShowUserWithRel
 from api.schemas.mashup import ShowMashup, ShowMashupWithRel
 from api.schemas.source import ShowSource, ShowSourceWithRel
 from api.schemas.author import ShowAuthor, ShowAuthorWithRel
-from api import BaseModel
+from api.schemas import BaseModel
 
 
 class Base(DeclarativeBase):
@@ -48,7 +48,7 @@ class SchemaMixin:
         return schema.model_validate(self, from_attributes=True)
 
 
-class User(Base, SchemaMixin):
+class User(MappedAsDataclass, Base, SchemaMixin):
     __tablename__ = "users"
 
     id: Mapped[primary_key_int]
@@ -58,16 +58,16 @@ class User(Base, SchemaMixin):
     is_active: Mapped[is_active]
     hashed_password: Mapped[nonnull_str]
 
-    mashups: Mapped[List["Mashup"]] = relationship(back_populates="user")
+    mashups: Mapped[Optional[List["Mashup"]]] = relationship(default_factory=lambda: [], back_populates="user")
 
     def to_schema_without_rel(self) -> ShowUser:
-        return self.to_schema(ShowMashup)
+        return self.to_schema(ShowUser)
 
     def to_schema_with_rel(self) -> ShowUserWithRel:
         return self.to_schema(ShowUserWithRel)
 
 
-class Mashup(Base, SchemaMixin):
+class Mashup(MappedAsDataclass, Base, SchemaMixin):
     __tablename__ = "mashups"
 
     id: Mapped[primary_key_int]
@@ -79,7 +79,7 @@ class Mashup(Base, SchemaMixin):
 
     user: Mapped["User"] = relationship(back_populates="mashups")
     sources: Mapped[List["Source"]] = relationship(
-        back_populates="mashups", secondary="MashupSourceLink"
+        back_populates="mashups", secondary="mashup_source_table"
     )
 
     def to_schema_without_rel(self) -> ShowUser:
@@ -98,8 +98,8 @@ class Source(Base, SchemaMixin):
     is_active: Mapped[is_active]
     author_id: Mapped[int] = mapped_column(ForeignKey("authors.id", ondelete="CASCADE"))
     author: Mapped["Author"] = relationship(back_populates="sources")
-    mashups: Mapped[List["Source"]] = relationship(
-        back_populates="sources", secondary="MashupSourceLink"
+    mashups: Mapped[List["Mashup"]] = relationship(
+        back_populates="sources", secondary="mashup_source_table"
     )
 
     def to_schema_without_rel(self) -> ShowSource:

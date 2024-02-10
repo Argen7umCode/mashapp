@@ -23,16 +23,9 @@ async def _create_user(body: CreateUserRequest, session: AsyncSession) -> ShowUs
             username=body.username,
             email=body.email,
             is_active=True,
-            hashed_password=body.hashed_password,
-            mashups=[],
+            hashed_password=body.hashed_password
         )
-    return ShowUser(
-        user_id=user.user_id,
-        name=user.name,
-        username=user.username,
-        email=user.email,
-        is_active=user.is_active,
-    )
+    return user.to_schema_without_rel()
 
 
 async def _get_user_by_id(user_id: int, session: AsyncSession) -> User:

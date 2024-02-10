@@ -9,7 +9,6 @@ if TYPE_CHECKING:
 
 
 class CreateUserRequest(TunedModel):
-    id: int
     name: str
     username: str
     email: EmailStr

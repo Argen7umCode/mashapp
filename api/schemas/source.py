@@ -1,6 +1,6 @@
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, List
 
-from api.schemas import BaseModel, TunedModel, List
+from api.schemas import BaseModel, TunedModel
 
 if TYPE_CHECKING:
     from api.schemas.mashup import ShowMashup

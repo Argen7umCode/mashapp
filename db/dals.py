@@ -53,14 +53,15 @@ class UserDAL(DAL):
         email: str,
         is_active: bool,
         hashed_password: str,
-        mashups: list,
+
     ) -> User:
         new_user = User(
+            id=None,
             name=name,
             username=username,
             email=email,
             is_active=is_active,
-            hashed_password=hashed_password,
+            hashed_password=hashed_password
         )
         return await self._create(new_user)
 
@@ -95,11 +96,11 @@ class UserDAL(DAL):
 
 class MashupDAL(DAL):
     async def create_mashup(
-        self, name: str, audio_id: bytes, user_id: int, sources: list
+        self, name: str, audio: bytes, user_id: int, sources: list
     ) -> Mashup:
         new_mashup = Mashup(
             name=name,
-            audio_id=audio_id,
+            audio=audio,
             user_id=user_id,
             is_active=True,
             sources=sources,

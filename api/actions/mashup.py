@@ -1,14 +1,14 @@
-from typing import Optional, Union
+from typing import List, Optional, Union
 
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status
 
-from db.dals import MashupDAL, UserDAL, AudioDAL, SourceDAL
+from db.dals import MashupDAL, UserDAL, SourceDAL
 from api.schemas.mashup import (
     CreateMashupRequest,
     ShowMashup,
-    ShowMashups,
+    ShowMashup,
     GetMashupRequest,
 )
 from api.schemas.mashup import UpdateMashupRequest, UpdateMashupResponse
@@ -23,12 +23,10 @@ async def _create_mashup(
         user_dal = UserDAL(session)
         user = await user_dal.is_exists(user_id)
 
+        audio = body.audio
+
         if not user:
             ...  # обработка того что пользователя нет в базе
-
-        audio_dal = AudioDAL(session)
-        created_audio = await audio_dal.create_audio(body.audio)
-        audio_id = created_audio.audio_id
 
         getted_sources_id = body.sources
         source_dal = SourceDAL(session)
@@ -40,25 +38,26 @@ async def _create_mashup(
             else:
                 ...  # оработка того что сурс отсутсвует в базе
 
+        if sources == []:
+            ... # Обработка того что сурсов нет в базе 
+
+
         mashup_dal = MashupDAL(session)
         created_mashup = await mashup_dal.create_mashup(
-            name=body.name, audio_id=audio_id, sources=sources
+            name=body.name, 
+            audio=audio, 
+            user_id=user_id,
+            sources=sources
         )
 
         user_dal.update_user(
             user_id=user.user_id, mashups=user.mashups + [created_mashup]
         )
 
-        return ShowMashup(
-            mashup_id=created_mashup.mashup_id,
-            name=created_mashup.name,
-            is_active=created_mashup.is_active,
-            user_id=created_mashup.user_id,
-            sources_id=[source.source_id for source in sources],
-        )
+        return created_mashup.to_schema_with_rel()
 
 
-async def _get_mashup(body: GetMashupRequest, session: AsyncSession) -> ShowMashups:
+async def _get_mashup(body: GetMashupRequest, session: AsyncSession) -> List[ShowMashup]:
     with session.begin():
         mashup_dal = MashupDAL(session)
 
@@ -76,8 +75,7 @@ async def _get_mashup(body: GetMashupRequest, session: AsyncSession) -> ShowMash
                 detail="Unknown fields in body data",
             )
 
-        return ShowMashups(
-            [
+        return [
                 ShowMashup(
                     mashup_id=mashup.mashup_id,
                     name=mashup.name,
@@ -86,7 +84,7 @@ async def _get_mashup(body: GetMashupRequest, session: AsyncSession) -> ShowMash
                 )
                 for mashup in getted_mashups
             ]
-        )
+        
 
 
 async def _update_mashup(
