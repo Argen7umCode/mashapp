@@ -23,7 +23,7 @@ async def _create_user(body: CreateUserRequest, session: AsyncSession) -> ShowUs
             username=body.username,
             email=body.email,
             is_active=True,
-            hashed_password=body.hashed_password
+            hashed_password=body.hashed_password,
         )
     return user.to_schema_without_rel()
 

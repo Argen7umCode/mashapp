@@ -39,15 +39,11 @@ async def _create_mashup(
                 ...  # оработка того что сурс отсутсвует в базе
 
         if sources == []:
-            ... # Обработка того что сурсов нет в базе 
-
+            ...  # Обработка того что сурсов нет в базе
 
         mashup_dal = MashupDAL(session)
         created_mashup = await mashup_dal.create_mashup(
-            name=body.name, 
-            audio=audio, 
-            user_id=user_id,
-            sources=sources
+            name=body.name, audio=audio, user_id=user_id, sources=sources
         )
 
         user_dal.update_user(
@@ -57,7 +53,9 @@ async def _create_mashup(
         return created_mashup.to_schema_with_rel()
 
 
-async def _get_mashup(body: GetMashupRequest, session: AsyncSession) -> List[ShowMashup]:
+async def _get_mashup(
+    body: GetMashupRequest, session: AsyncSession
+) -> List[ShowMashup]:
     with session.begin():
         mashup_dal = MashupDAL(session)
 
@@ -76,15 +74,14 @@ async def _get_mashup(body: GetMashupRequest, session: AsyncSession) -> List[Sho
             )
 
         return [
-                ShowMashup(
-                    mashup_id=mashup.mashup_id,
-                    name=mashup.name,
-                    user_id=mashup.user_id,
-                    source=[source.source_id for source in mashup.sources],
-                )
-                for mashup in getted_mashups
-            ]
-        
+            ShowMashup(
+                mashup_id=mashup.mashup_id,
+                name=mashup.name,
+                user_id=mashup.user_id,
+                source=[source.source_id for source in mashup.sources],
+            )
+            for mashup in getted_mashups
+        ]
 
 
 async def _update_mashup(
