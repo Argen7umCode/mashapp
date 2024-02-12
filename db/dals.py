@@ -19,15 +19,13 @@ class DAL:
 
     async def _make_query_and_get_all(self, query) -> Union[User, None]:
         res = await self.db_session.execute(query)
-        row = res.fetchall()
-        if row is not None:
-            return row
-
+        row = res.scalar_one_or_none()
+        return row
+        
     async def _make_query_and_get_one(self, query) -> Union[User, None]:
         res = await self.db_session.execute(query)
-        row = res.fetchone()
-        if row is not None:
-            return row
+        row = res.scalar_one_or_none()
+        return row
 
     async def _get_all_by_field_value(self, table: Base, field, value: Any):
         query = select(table).where(field == value)
@@ -38,7 +36,7 @@ class DAL:
         return await self._make_query_and_get_all(query)
 
     async def _get_by_id(self, id: int, table):
-        return await self._get_one_by_field_value(table, table.user_id, id)
+        return await self._get_one_by_field_value(table, table.id, id)
 
     async def is_exists(self, id: int) -> bool:
         item = await self.get_by_id(id)
