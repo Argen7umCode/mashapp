@@ -28,7 +28,6 @@ def event_loop():
 
 @pytest.fixture(scope="session", autouse=True)
 def run_migrations():
-    print("ALEEBBIC")
     os.system("alembic init migrations")
     os.system('alembic revision --autogenerate -m "test running migrations"')
     os.system("alembic upgrade heads")
@@ -43,15 +42,13 @@ async_session = sessionmaker(
     engine, expire_on_commit=False, class_=AsyncSession, autoflush=True
 )
 
+
 @pytest.fixture(scope="session", autouse=True)
 async def _get_test_db() -> Generator:
     session: AsyncSession = async_session()
     try:
         print("SESSION OPEN")
         yield session
-    except:
-        await session.rollback()
-
     finally:
         print("SESSION CLOSED")
         await session.rollback()
