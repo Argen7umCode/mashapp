@@ -2,6 +2,7 @@ from typing import Optional, Union
 
 
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException, status
 
 from db.dals import UserDAL, MashupDAL
@@ -17,13 +18,20 @@ from api.schemas.user import UpdatedUserResponse, DeleteUserResponse, DeleteUser
 
 async def _create_user(body: CreateUserRequest, session: AsyncSession) -> ShowUser:
     user_dal = UserDAL(session)
-    user = await user_dal.create_user(
-        name=body.name,
-        username=body.username,
-        email=body.email,
-        is_active=True,
-        hashed_password=body.hashed_password,
-    )
+    
+    try:
+        user = await user_dal.create_user(
+            name=body.name,
+            username=body.username,
+            email=body.email,
+            is_active=True,
+            hashed_password=body.hashed_password,
+        )
+    except IntegrityError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="User with same username or email is already exists",
+        )
     return user.to_schema_without_rel()
 
 
