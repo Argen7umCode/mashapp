@@ -58,7 +58,9 @@ class User(MappedAsDataclass, Base, SchemaMixin):
     is_active: Mapped[is_active]
     hashed_password: Mapped[nonnull_str]
 
-    mashups: Mapped[Optional[List["Mashup"]]] = relationship(default_factory=lambda: [], back_populates="user")
+    mashups: Mapped[Optional[List["Mashup"]]] = relationship(
+        default_factory=lambda: [], back_populates="user"
+    )
 
     def to_schema_without_rel(self) -> ShowUser:
         return self.to_schema(ShowUser)

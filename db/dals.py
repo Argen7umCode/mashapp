@@ -53,7 +53,6 @@ class UserDAL(DAL):
         email: str,
         is_active: bool,
         hashed_password: str,
-
     ) -> User:
         new_user = User(
             id=None,
@@ -61,7 +60,7 @@ class UserDAL(DAL):
             username=username,
             email=email,
             is_active=is_active,
-            hashed_password=hashed_password
+            hashed_password=hashed_password,
         )
         return await self._create(new_user)
 
