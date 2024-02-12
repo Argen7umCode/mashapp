@@ -29,7 +29,7 @@ async def _create_user(body: CreateUserRequest, session: AsyncSession) -> ShowUs
 
 async def _get_user_by_id(user_id: int, session: AsyncSession) -> User:
     user_dal = UserDAL(session)
-    return await user_dal.get_user_by_id(
+    return await user_dal.get_by_id(
         user_id=user_id,
     )
 
@@ -54,7 +54,7 @@ async def _get_user_by_email(email: str, session: AsyncSession) -> User:
 
 
 async def _get_user(body: GetUserRequest, session: AsyncSession) -> ShowUser:
-    if user_id := body.user_id:
+    if user_id := body.id:
         user = await _get_user_by_id(user_id, session)
     elif email := body.email:
         user = await _get_user_by_email(email, session)
@@ -66,18 +66,12 @@ async def _get_user(body: GetUserRequest, session: AsyncSession) -> ShowUser:
             detail="Unknown fields in body data",
         )
 
-    if user in None:
+    if user is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found."
         )
 
-    return ShowUser(
-        user_id=user.user_id,
-        name=user.name,
-        username=user.username,
-        email=user.email,
-        is_active=user.is_active,
-    )
+    return user.to_schema_without_rel()
 
 
 async def _delete_user(
