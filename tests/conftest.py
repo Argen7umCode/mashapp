@@ -29,7 +29,7 @@ def event_loop():
 @pytest.fixture(scope="session", autouse=True)
 def run_migrations():
     print("ALEEBBIC")
-    # os.system("alembic init migrations")
+    os.system("alembic init migrations")
     os.system('alembic revision --autogenerate -m "test running migrations"')
     os.system("alembic upgrade heads")
 

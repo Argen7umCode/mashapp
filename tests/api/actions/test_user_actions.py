@@ -20,35 +20,32 @@ from conftest import _get_test_db
 #     loop.close()
 
 
-
 @pytest.mark.asyncio
 async def test_create_user_succsses_insert_into_db(_get_test_db):
-    session =  _get_test_db()
-    
-    name = "Artur"
-    username = "argen7um"
-    email = "argen7um@mail.com"
-    hashed_password = "tespass"
+    async with _get_test_db as session:
+        name = "Artur"
+        username = "argen7um"
+        email = "argen7um@mail.com"
+        hashed_password = "tespass"
 
-    user_data = CreateUserRequest(
-        name=name, username=username, email=email, hashed_password=hashed_password
-    )
-
-    response = await _create_user(user_data, session)
-
-    query = select(User).where(
-        and_(
-            User.name == name,
-            User.username == username,
-            User.email == email,
-            User.hashed_password == hashed_password,
+        user_data = CreateUserRequest(
+            name=name, username=username, email=email, hashed_password=hashed_password
         )
-    )
-    db_response = await session.execute(query)
-    test = db_response.fetchall()
 
-    await session.rollback()
-    assert True
+        response = await _create_user(user_data, session)
+
+        query = select(User).where(
+            and_(
+                User.name == name,
+                User.username == username,
+                User.email == email,
+                User.hashed_password == hashed_password,
+            )
+        )
+        db_response = await session.execute(query)
+        test = db_response.fetchall()
+
+        assert True
 
 
 # @pytest.mark.asyncio
