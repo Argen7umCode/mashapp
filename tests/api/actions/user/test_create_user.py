@@ -15,16 +15,11 @@ from db.models import User
 
 @pytest.fixture(scope="module")
 async def prepare_valid_test_data():
-    name = "Artur"
-    username = "argen7um"
-    email = "argen7um@mail.com"
-    hashed_password = "tespass"
-
     return {
-        "name": name,
-        "username": username,
-        "email": email,
-        "hashed_password": hashed_password,
+        "name": "Artur",
+        "username": "argen7um",
+        "email": "argen7um@mail.com",
+        "hashed_password": "tespass",
     }
 
 
@@ -34,6 +29,7 @@ async def test_create_user_succsses_insert_into_db(_get_test_db, prepare_valid_t
     username = prepare_valid_test_data["username"]
     email = prepare_valid_test_data["email"]
     hashed_password = prepare_valid_test_data["hashed_password"]
+
 
     async with _get_test_db as session:
         user_data = CreateUserRequest(
@@ -72,10 +68,10 @@ async def test_create_user_return_valid_data(_get_test_db, prepare_valid_test_da
 
         response = await _create_user(user_data, session)
 
-        assert response.name == name
-        assert response.username == username
-        assert response.email == email
-        assert isinstance(response, ShowUser)
+    assert response.name == name
+    assert response.username == username
+    assert response.email == email
+    assert isinstance(response, ShowUser)
 
 
 @pytest.mark.asyncio
@@ -97,18 +93,6 @@ async def test_duplicate_data(_get_test_db, prepare_valid_test_data):
             assert e.type == HTTPException
             assert str(e.value) == 'User with same username or email is already exists'
 
-@pytest.fixture(scope="module")
-async def prepare_invalid_test_data():
-    name = "Artur"
-    username = "argen7um"
-    email = "argen7ummail.com"
-    hashed_password = "tespass"
 
-    return {
-        "name": name,
-        "username": username,
-        "email": email,
-        "hashed_password": hashed_password,
-    }
 
 

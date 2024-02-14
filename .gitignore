@@ -130,3 +130,5 @@ dmypy.json
 .vscode
 tests/migrations/
 tests/alembic.ini
+migrations/script.py.mako
+migrations/README
