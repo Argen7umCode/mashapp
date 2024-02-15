@@ -18,7 +18,7 @@ from api.schemas.user import UpdatedUserResponse, DeleteUserResponse, DeleteUser
 
 async def _create_user(body: CreateUserRequest, session: AsyncSession) -> ShowUser:
     user_dal = UserDAL(session)
-    
+
     try:
         user = await user_dal.create_user(
             name=body.name,
@@ -44,7 +44,7 @@ async def _get_user_by_id(user_id: int, session: AsyncSession) -> User:
 
 async def _get_user_by_mashup_id(mashup_id: int, session: AsyncSession) -> User:
     mashup_dal = MashupDAL(session)
-    mashup = await mashup_dal.get_mashup_by_id(mashup_id)
+    mashup = await mashup_dal.get_by_id(mashup_id)
     if mashup is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
