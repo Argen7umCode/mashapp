@@ -18,15 +18,11 @@ sys.path[0] = "/".join(os.getcwd().split("/")[:-1])
 import config
 
 
-
 def pytest_collection_modifyitems(items):
     pytest_asyncio_tests = (item for item in items if is_async_test(item))
     session_scope_marker = pytest.mark.asyncio(scope="session")
     for async_test in pytest_asyncio_tests:
         async_test.add_marker(session_scope_marker)
-
-
-
 
 
 # @pytest.fixture(scope="session")
@@ -54,17 +50,9 @@ async def _get_test_db() -> Generator:
     session = sessionmaker(
         engine, expire_on_commit=False, class_=AsyncSession, autoflush=True
     )
-    print(session)
     try:
-        print("SESSION OPEN")
         async with session() as ses:
             yield ses
     finally:
         await ses.rollback()
         await ses.close()
-        print("SESSION CLOSE")
-
-
-
-
-

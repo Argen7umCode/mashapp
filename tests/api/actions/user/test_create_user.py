@@ -1,4 +1,3 @@
-
 import pytest
 
 
@@ -8,7 +7,7 @@ from api.actions.user import (
 
 from sqlalchemy import and_, select
 
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 from api.schemas.user import CreateUserRequest, ShowUser
 from db.models import User
 
@@ -24,12 +23,13 @@ async def prepare_valid_test_data():
 
 
 @pytest.mark.asyncio
-async def test_create_user_succsses_insert_into_db(_get_test_db, prepare_valid_test_data):
+async def test_create_user_succsses_insert_into_db(
+    _get_test_db, prepare_valid_test_data
+):
     name = prepare_valid_test_data["name"]
     username = prepare_valid_test_data["username"]
     email = prepare_valid_test_data["email"]
     hashed_password = prepare_valid_test_data["hashed_password"]
-
 
     async with _get_test_db as session:
         user_data = CreateUserRequest(
@@ -52,7 +52,7 @@ async def test_create_user_succsses_insert_into_db(_get_test_db, prepare_valid_t
         assert response.name == test.name
         assert response.username == test.username
         assert response.email == test.email
-        
+
 
 @pytest.mark.asyncio
 async def test_create_user_return_valid_data(_get_test_db, prepare_valid_test_data):
@@ -87,12 +87,11 @@ async def test_duplicate_data(_get_test_db, prepare_valid_test_data):
         )
 
         response = await _create_user(user_data, session)
-        
+
         with pytest.raises(Exception) as e:
             second_response = await _create_user(user_data, session)
-            assert e.type == HTTPException
-            assert str(e.value) == 'User with same username or email is already exists'
+        assert e.value.status_code == status.HTTP_400_BAD_REQUEST
+        assert str(e.value.detail) == "User with same username or email is already exists"
 
 
-
-
+ 
