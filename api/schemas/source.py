@@ -1,13 +1,13 @@
 from typing import TYPE_CHECKING, Optional, List
 
-from api.schemas import BaseModel, TunedModel
+from api.schemas import BaseModel
 
 if TYPE_CHECKING:
     from api.schemas.mashup import ShowMashup
     from api.schemas.author import ShowAuthor
 
 
-class CreateSourceRequest(TunedModel):
+class CreateSourceRequest(BaseModel):
     name: str
     authors: List[int]
 

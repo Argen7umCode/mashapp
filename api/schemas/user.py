@@ -1,6 +1,6 @@
 from typing import List, TYPE_CHECKING
 
-from api.schemas import TunedModel, EmailStr
+from api.schemas import EmailStr
 from api.schemas import Optional, BaseModel, constr
 
 
@@ -8,20 +8,20 @@ if TYPE_CHECKING:
     from api.schemas.mashup import ShowMashup
 
 
-class CreateUserRequest(TunedModel):
+class CreateUserRequest(BaseModel):
     name: str
     username: str
     email: EmailStr
     hashed_password: str
 
 
-class GetUserRequest(TunedModel):
+class GetUserRequest(BaseModel):
     id: Optional[int] = None
     email: Optional[EmailStr] = None
     mashup_id: Optional[int] = None
 
 
-class ShowUser(TunedModel):
+class ShowUser(BaseModel):
     id: int
     name: str
     username: str
