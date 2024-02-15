@@ -82,5 +82,24 @@ async def test_succsses_update_user(
 
         assert updated_user.hashed_password == test_user.hashed_password
         
-        
+@pytest.mark.asyncio
+async def test_update_user_with_none_fields(
+    _get_test_db, prepare_valid_test_data):     
+    name = prepare_valid_test_data["name"]
+    username = prepare_valid_test_data["username"]
+    email = prepare_valid_test_data["email"]
+    hashed_password = prepare_valid_test_data["hashed_password"]
 
+    async with _get_test_db as session:
+        test_user = User(**prepare_valid_test_data)
+        await insert_into_db(test_user, session)
+
+        user_data = UpdateUserRequest()
+        with pytest.raises(HTTPException) as e:
+            updated_data = await _update_user(user_data, 
+                                          test_user.id, 
+                                          session)
+        assert e.value.status_code == status.HTTP_400_BAD_REQUEST
+        assert str(e.value.detail) == "Unknown fields in body data"
+
+        
