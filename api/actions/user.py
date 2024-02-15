@@ -95,5 +95,5 @@ async def _update_user(
     new_data: UpdateUserRequest, user_id: int, session: AsyncSession
 ) -> UpdatedUserResponse:
     user_dal = UserDAL(session)
-    user_id = await user_dal.update_user(user_id, **new_data)
+    user_id = await user_dal.update_user(user_id, **dict(new_data))
     return UpdatedUserResponse(updated_user_id=user_id)

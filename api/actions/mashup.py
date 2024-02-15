@@ -45,7 +45,7 @@ async def _create_mashup(
         name=body.name, audio=audio, user_id=user_id, sources=sources
     )
 
-    user_dal.update_user(user_id=user.user_id, mashups=user.mashups + [created_mashup])
+    user_dal.update_user(user_id=User.id, mashups=user.mashups + [created_mashup])
 
     return created_mashup.to_schema_with_rel()
 
