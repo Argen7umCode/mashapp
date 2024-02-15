@@ -96,5 +96,12 @@ async def _update_user(
 ) -> UpdatedUserResponse:
     user_dal = UserDAL(session)
     cleared_data = remove_none_values_from_dict(dict(new_data))
-    user_id = await user_dal.update_user(user_id, **cleared_data)
+    try:
+        user_id = await user_dal.update_user(user_id, **cleared_data)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Unknown fields in body data",
+        )
+
     return UpdatedUserResponse(id=user_id)
