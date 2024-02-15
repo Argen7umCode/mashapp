@@ -39,7 +39,7 @@ class UpdatedUserResponse(BaseModel):
 
 class UpdateUserRequest(BaseModel):
     name: Optional[constr(min_length=1)] = None
-    surname: Optional[constr(min_length=1)] = None
+    username: Optional[constr(min_length=1)] = None
     email: Optional[EmailStr] = None
 
 

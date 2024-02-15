@@ -14,7 +14,7 @@ from api.schemas.user import (
     UpdateUserRequest,
 )
 from api.schemas.user import UpdatedUserResponse, DeleteUserResponse, DeleteUserRequest
-
+from api.actions.common import remove_none_values_from_dict
 
 async def _create_user(body: CreateUserRequest, session: AsyncSession) -> ShowUser:
     user_dal = UserDAL(session)
@@ -95,5 +95,6 @@ async def _update_user(
     new_data: UpdateUserRequest, user_id: int, session: AsyncSession
 ) -> UpdatedUserResponse:
     user_dal = UserDAL(session)
-    user_id = await user_dal.update_user(user_id, **dict(new_data))
-    return UpdatedUserResponse(updated_user_id=user_id)
+    cleared_data = remove_none_values_from_dict(dict(new_data))
+    user_id = await user_dal.update_user(user_id, **cleared_data)
+    return UpdatedUserResponse(id=user_id)
