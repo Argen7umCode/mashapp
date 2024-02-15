@@ -12,16 +12,6 @@ from api.schemas.user import CreateUserRequest, ShowUser
 from db.models import User
 
 
-@pytest.fixture(scope="module")
-async def prepare_valid_test_data():
-    return {
-        "name": "Artur",
-        "username": "argen7um",
-        "email": "argen7um@mail.com",
-        "hashed_password": "tespass",
-    }
-
-
 @pytest.mark.asyncio
 async def test_create_user_succsses_insert_into_db(
     _get_test_db, prepare_valid_test_data
@@ -88,7 +78,7 @@ async def test_duplicate_data(_get_test_db, prepare_valid_test_data):
 
         response = await _create_user(user_data, session)
 
-        with pytest.raises(Exception) as e:
+        with pytest.raises(HTTPException) as e:
             second_response = await _create_user(user_data, session)
         assert e.value.status_code == status.HTTP_400_BAD_REQUEST
         assert str(e.value.detail) == "User with same username or email is already exists"

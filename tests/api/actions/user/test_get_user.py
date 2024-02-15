@@ -1,32 +1,14 @@
-import asyncio
 from typing import Any
 import pytest
 
 
-from api.actions.user import _create_user, _get_user
+from api.actions.user import _get_user
 
-from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status
 from api.schemas.user import GetUserRequest, ShowUser
-from db.models import Base, User, Mashup
-
-
-@pytest.fixture(scope="module")
-def prepare_valid_test_data() -> dict[str, Any]:
-    return {
-        "id": None,
-        "name": "Artur",
-        "username": "argen7um",
-        "email": "argen7um@mail.com",
-        "hashed_password": "tespass",
-        "is_active": True,
-    }
-
-
-async def insert_into_db(data: Base, session: AsyncSession) -> None:
-    session.add(data)
-    await session.flush()
+from tests.db_funcs import insert_into_db
+from db.models import User, Mashup
 
 
 @pytest.mark.asyncio
@@ -45,7 +27,6 @@ async def test_get_user_by_id(
     assert got_user.username == prepare_valid_test_data["username"]
     assert got_user.email == prepare_valid_test_data["email"]
     assert got_user.is_active == prepare_valid_test_data["is_active"]
-
     assert isinstance(got_user, ShowUser)
 
 
@@ -65,7 +46,6 @@ async def test_get_user_by_email(
     assert got_user.username == prepare_valid_test_data["username"]
     assert got_user.email == prepare_valid_test_data["email"]
     assert got_user.is_active == prepare_valid_test_data["is_active"]
-
     assert isinstance(got_user, ShowUser)
 
 
@@ -95,9 +75,7 @@ async def test_get_user_by_mashup_id(
     assert got_user.username == prepare_valid_test_data["username"]
     assert got_user.email == prepare_valid_test_data["email"]
     assert got_user.is_active == prepare_valid_test_data["is_active"]
-
     assert isinstance(got_user, ShowUser)
-
 
 
 @pytest.mark.asyncio
@@ -110,8 +88,8 @@ async def test_get_user_when_user_isnt_exists(
         
         with pytest.raises(HTTPException) as e:
             got_user = await _get_user(request, session)
-        assert e.value.status_code == status.HTTP_404_NOT_FOUND
-        assert str(e.value.detail) == "User not found."
+    assert e.value.status_code == status.HTTP_404_NOT_FOUND
+    assert str(e.value.detail) == "User not found."
 
 
 @pytest.mark.asyncio
@@ -124,19 +102,19 @@ async def test_get_user_when_mashup_isnt_exists(
 
         with pytest.raises(HTTPException) as e:
             got_user = await _get_user(request, session)
-        assert e.value.status_code == status.HTTP_404_NOT_FOUND
-        assert str(e.value.detail) == f"Mashup with id {mashup_id} not found."
+    assert e.value.status_code == status.HTTP_404_NOT_FOUND
+    assert str(e.value.detail) == f"Mashup with id {mashup_id} not found."
 
 
 @pytest.mark.asyncio
 async def test_get_user_with_empty_body(
     _get_test_db: AsyncSession
 ):
-    
     async with _get_test_db as session:
         request = GetUserRequest()
         
         with pytest.raises(HTTPException) as e:
             got_user = await _get_user(request, session)
-        assert e.value.status_code == status.HTTP_400_BAD_REQUEST
-        assert str(e.value.detail) == "Unknown fields in body data"
+    assert e.value.status_code == status.HTTP_400_BAD_REQUEST
+    assert str(e.value.detail) == "Unknown fields in body data"
+
