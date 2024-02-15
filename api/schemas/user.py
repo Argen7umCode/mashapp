@@ -38,9 +38,9 @@ class UpdatedUserResponse(BaseModel):
 
 
 class UpdateUserRequest(BaseModel):
-    name: Optional[constr(min_length=1)]
-    surname: Optional[constr(min_length=1)]
-    email: Optional[EmailStr]
+    name: Optional[constr(min_length=1)] = None
+    surname: Optional[constr(min_length=1)] = None
+    email: Optional[EmailStr] = None
 
 
 class DeleteUserResponse(BaseModel):
