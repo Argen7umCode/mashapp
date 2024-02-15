@@ -75,18 +75,18 @@ class UserDAL(DAL):
     async def delete_user(self, user_id: int) -> Union[int, None]:
         query = (
             update(User)
-            .where(and_(User.user_id == user_id, User.is_active == True))
+            .where(and_(User.id == user_id, User.is_active == True))
             .values(is_active=False)
-            .returning(User.user_id)
+            .returning(User.id)
         )
         return await self._make_query_and_get_one(query)
 
     async def update_user(self, user_id, **kwargs) -> Union[int, None]:
         query = (
             update(User)
-            .where(and_(User.user_id == user_id, User.is_active == True))
+            .where(and_(User.id == user_id, User.is_active == True))
             .values(kwargs)
-            .returning(User.user_id)
+            .returning(User.id)
         )
         return await self._make_query_and_get_one(query)
 
