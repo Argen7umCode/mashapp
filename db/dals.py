@@ -21,7 +21,7 @@ class DAL:
         res = await self.db_session.execute(query)
         row = res.scalar_one_or_none()
         return row
-        
+
     async def _make_query_and_get_one(self, query) -> Union[User, None]:
         res = await self.db_session.execute(query)
         row = res.scalar_one_or_none()
@@ -66,7 +66,7 @@ class UserDAL(DAL):
         return await self._get_by_id(user_id, User)
 
     async def get_user_by_mashup_id(self, mashup_id: int) -> Union[User, None]:
-        query = select(User).join(Mashup).where(Mashup.mashup_id == mashup_id)
+        query = select(User).join(Mashup).where(Mashup.id == mashup_id)
         return await self._make_query_and_get_one(query)
 
     async def get_user_by_email(self, email: str) -> Union[User, None]:
