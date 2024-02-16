@@ -1,11 +1,8 @@
-from typing import Any
 import pytest
-
-
-from api.actions.user import _get_user
-
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status
+
+from api.actions.user import _get_user
 from api.schemas.user import GetUserRequest, ShowUser
 from tests.db_funcs import insert_into_db
 from db.models import User, Mashup
@@ -79,13 +76,10 @@ async def test_get_user_by_mashup_id(
 
 
 @pytest.mark.asyncio
-async def test_get_user_when_user_isnt_exists(
-    _get_test_db: AsyncSession
-):  
+async def test_get_user_when_user_isnt_exists(_get_test_db: AsyncSession):
     user_id = 1
     request = GetUserRequest(id=user_id)
     async with _get_test_db as session:
-        
         with pytest.raises(HTTPException) as e:
             got_user = await _get_user(request, session)
     assert e.value.status_code == status.HTTP_404_NOT_FOUND
@@ -93,13 +87,10 @@ async def test_get_user_when_user_isnt_exists(
 
 
 @pytest.mark.asyncio
-async def test_get_user_when_mashup_isnt_exists(
-    _get_test_db: AsyncSession
-):  
+async def test_get_user_when_mashup_isnt_exists(_get_test_db: AsyncSession):
     mashup_id = 1
     request = GetUserRequest(mashup_id=mashup_id)
     async with _get_test_db as session:
-
         with pytest.raises(HTTPException) as e:
             got_user = await _get_user(request, session)
     assert e.value.status_code == status.HTTP_404_NOT_FOUND
@@ -107,14 +98,11 @@ async def test_get_user_when_mashup_isnt_exists(
 
 
 @pytest.mark.asyncio
-async def test_get_user_with_empty_body(
-    _get_test_db: AsyncSession
-):
+async def test_get_user_with_empty_body(_get_test_db: AsyncSession):
     async with _get_test_db as session:
         request = GetUserRequest()
-        
+
         with pytest.raises(HTTPException) as e:
             got_user = await _get_user(request, session)
     assert e.value.status_code == status.HTTP_400_BAD_REQUEST
     assert str(e.value.detail) == "Unknown fields in body data"
-

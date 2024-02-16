@@ -81,7 +81,6 @@ async def test_duplicate_data(_get_test_db, prepare_valid_test_data):
         with pytest.raises(HTTPException) as e:
             second_response = await _create_user(user_data, session)
         assert e.value.status_code == status.HTTP_400_BAD_REQUEST
-        assert str(e.value.detail) == "User with same username or email is already exists"
-
-
- 
+        assert (
+            str(e.value.detail) == "User with same username or email is already exists"
+        )

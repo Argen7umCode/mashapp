@@ -1,21 +1,18 @@
 from typing import Any
+
 import pytest
-
-
-from api.actions.user import (
-    _update_user,
-)
-
-from sqlalchemy import and_, select
-
+from tests.db_funcs import insert_into_db
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status
+
+from api.actions.user import _update_user
 from api.schemas.user import UpdateUserRequest, UpdatedUserResponse
 from db.models import User
-from tests.db_funcs import insert_into_db
 
 
-updated_name = 'Pavel'
-updated_username = 'aphexfan'
+updated_name = "Pavel"
+updated_username = "aphexfan"
 updated_email = "aphexfan@mail.com"
 
 
@@ -30,16 +27,30 @@ def prepare_new_test_data() -> dict[str, Any]:
         "is_active": True,
     }
 
-@pytest.mark.parametrize("new_data", (({'name':updated_name},
-                                       {'username':updated_username},
-                                       {'email':updated_email},
-                                       {'name':updated_name, 'email':updated_email},
-                                       {'name':updated_name, 'username':updated_username},
-                                       {'email':updated_email, 'username':updated_username},
-                                       {'name':updated_name, 'email':updated_email, 'username':updated_username})))
+
+@pytest.mark.parametrize(
+    "new_data",
+    (
+        (
+            {"name": updated_name},
+            {"username": updated_username},
+            {"email": updated_email},
+            {"name": updated_name, "email": updated_email},
+            {"name": updated_name, "username": updated_username},
+            {"email": updated_email, "username": updated_username},
+            {
+                "name": updated_name,
+                "email": updated_email,
+                "username": updated_username,
+            },
+        )
+    ),
+)
 @pytest.mark.asyncio
 async def test_succsses_update_user(
-    _get_test_db, prepare_valid_test_data, new_data
+    _get_test_db: AsyncSession,
+    prepare_valid_test_data: dict[str, str],
+    new_data: dict[str, str],
 ):
     name = prepare_valid_test_data["name"]
     username = prepare_valid_test_data["username"]
@@ -50,13 +61,9 @@ async def test_succsses_update_user(
         test_user = User(**prepare_valid_test_data)
         await insert_into_db(test_user, session)
 
-        user_data = UpdateUserRequest(
-            **new_data
-        )
-        updated_data = await _update_user(user_data, 
-                                          test_user.id, 
-                                          session)
-        
+        user_data = UpdateUserRequest(**new_data)
+        updated_data = await _update_user(user_data, test_user.id, session)
+
         assert isinstance(updated_data, UpdatedUserResponse)
         assert updated_data.id == test_user.id
 
@@ -65,26 +72,28 @@ async def test_succsses_update_user(
 
         assert updated_user.id == test_user.id
 
-        if new_name:=new_data.get('name'):
-            assert updated_user.name == new_name 
+        if new_name := new_data.get("name"):
+            assert updated_user.name == new_name
         else:
             assert updated_user.name == test_user.name
 
-        if new_username:=new_data.get('username'):
-            assert updated_user.username == new_username 
+        if new_username := new_data.get("username"):
+            assert updated_user.username == new_username
         else:
             assert updated_user.username == test_user.username
 
-        if new_email:=new_data.get('email'):
-            assert updated_user.email == new_email 
+        if new_email := new_data.get("email"):
+            assert updated_user.email == new_email
         else:
             assert updated_user.email == test_user.email
 
         assert updated_user.hashed_password == test_user.hashed_password
-        
+
+
 @pytest.mark.asyncio
 async def test_update_user_with_none_fields(
-    _get_test_db, prepare_valid_test_data):     
+    _get_test_db: AsyncSession, prepare_valid_test_data: dict[str, str]
+):
     name = prepare_valid_test_data["name"]
     username = prepare_valid_test_data["username"]
     email = prepare_valid_test_data["email"]
@@ -96,10 +105,18 @@ async def test_update_user_with_none_fields(
 
         user_data = UpdateUserRequest()
         with pytest.raises(HTTPException) as e:
-            updated_data = await _update_user(user_data, 
-                                          test_user.id, 
-                                          session)
+            updated_data = await _update_user(user_data, test_user.id, session)
         assert e.value.status_code == status.HTTP_400_BAD_REQUEST
         assert str(e.value.detail) == "Unknown fields in body data"
 
-        
+
+@pytest.mark.asyncio
+async def test_update_user_isnt_exist(_get_test_db: AsyncSession):
+    user_id = 1
+    with pytest.raises(HTTPException) as e:
+        async with _get_test_db as session:
+            user_data = UpdateUserRequest(**{"name": updated_name})
+            updated_data = await _update_user(user_data, user_id, session)
+
+    assert e.value.status_code == status.HTTP_404_NOT_FOUND
+    assert str(e.value.detail) == "User not found."
