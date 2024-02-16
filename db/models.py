@@ -81,7 +81,9 @@ class Mashup(MappedAsDataclass, Base, SchemaMixin):
 
     user: Mapped["User"] = relationship(back_populates="mashups")
     sources: Mapped[List["Source"]] = relationship(
-        back_populates="mashups", secondary="mashup_source_table", default_factory=lambda: []
+        back_populates="mashups",
+        secondary="mashup_source_table",
+        default_factory=lambda: [],
     )
 
     def to_schema_without_rel(self) -> ShowUser:
@@ -101,7 +103,9 @@ class Source(MappedAsDataclass, Base, SchemaMixin):
     author_id: Mapped[int] = mapped_column(ForeignKey("authors.id", ondelete="CASCADE"))
     author: Mapped["Author"] = relationship(back_populates="sources")
     mashups: Mapped[List["Mashup"]] = relationship(
-        back_populates="sources", secondary="mashup_source_table", default_factory=lambda: []
+        back_populates="sources",
+        secondary="mashup_source_table",
+        default_factory=lambda: [],
     )
 
     def to_schema_without_rel(self) -> ShowSource:
@@ -117,7 +121,9 @@ class Author(MappedAsDataclass, Base, SchemaMixin):
     id: Mapped[primary_key_int]
     name: Mapped[nonnull_str]
     is_active: Mapped[is_active]
-    sources: Mapped[List["Source"]] = relationship(back_populates="author", default_factory=lambda: [])
+    sources: Mapped[List["Source"]] = relationship(
+        back_populates="author", default_factory=lambda: []
+    )
 
     def to_schema_without_rel(self) -> ShowAuthor:
         return self.to_schema(ShowAuthor)

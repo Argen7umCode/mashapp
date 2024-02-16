@@ -83,7 +83,7 @@ class UserDAL(DAL):
 
     async def update_user(self, user_id, **kwargs) -> Union[int, None]:
         if len(kwargs) == 0:
-            raise ValueError('Updating user using empty data')
+            raise ValueError("Updating user using empty data")
         query = (
             update(User)
             .where(and_(User.id == user_id, User.is_active == True))
@@ -91,7 +91,7 @@ class UserDAL(DAL):
             .returning(User.id)
         )
         return await self._make_query_and_get_one(query)
-        
+
 
 class MashupDAL(DAL):
     async def create_mashup(

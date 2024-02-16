@@ -16,6 +16,7 @@ from api.schemas.user import (
 from api.schemas.user import UpdatedUserResponse, DeleteUserResponse, DeleteUserRequest
 from api.actions.common import remove_none_values_from_dict
 
+
 async def _create_user(body: CreateUserRequest, session: AsyncSession) -> ShowUser:
     user_dal = UserDAL(session)
 
@@ -86,9 +87,14 @@ async def _delete_user(
     body: DeleteUserRequest, session: AsyncSession
 ) -> DeleteUserResponse:
     user_dal = UserDAL(session)
-    user_id = await user_dal.delete_user(body.user_id)
+    user_id = await user_dal.delete_user(body.id)
 
-    return DeleteUserResponse(deleted_user_id=user_id)
+    if user_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found."
+        )
+    
+    return DeleteUserResponse(id=user_id)
 
 
 async def _update_user(
@@ -96,12 +102,18 @@ async def _update_user(
 ) -> UpdatedUserResponse:
     user_dal = UserDAL(session)
     cleared_data = remove_none_values_from_dict(dict(new_data))
+    
     try:
         user_id = await user_dal.update_user(user_id, **cleared_data)
     except ValueError:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Unknown fields in body data",
+        )
+
+    if user_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found."
         )
 
     return UpdatedUserResponse(id=user_id)
