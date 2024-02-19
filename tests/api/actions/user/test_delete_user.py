@@ -5,6 +5,7 @@ from fastapi import HTTPException, status
 
 from api.actions.user import _delete_user
 from api.schemas.user import DeleteUserRequest, DeleteUserResponse
+from exeptions.exeptions import UserAlreadyExistsExeption, UserNotFoundExeption
 from tests.db_funcs import insert_into_db
 from db.models import User
 
@@ -42,8 +43,6 @@ async def test_delete_user_isnt_exist(
     async with _get_test_db as session:
         request = DeleteUserRequest(id=user_id)
 
-        with pytest.raises(HTTPException) as e:
+        with pytest.raises(UserNotFoundExeption) as e:
             delete_responce = await _delete_user(request, session)
-
-        assert e.value.status_code == status.HTTP_404_NOT_FOUND
-        assert str(e.value.detail) == "User not found."
+        assert e.value.detail == UserNotFoundExeption.detail

@@ -1,6 +1,7 @@
 from typing import Any
 
 import pytest
+from exeptions.exeptions import UserNotFoundExeption
 from tests.db_funcs import insert_into_db
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -113,10 +114,8 @@ async def test_update_user_with_none_fields(
 @pytest.mark.asyncio
 async def test_update_user_isnt_exist(_get_test_db: AsyncSession):
     user_id = 1
-    with pytest.raises(HTTPException) as e:
+    with pytest.raises(UserNotFoundExeption) as e:
         async with _get_test_db as session:
             user_data = UpdateUserRequest(**{"name": updated_name})
             updated_data = await _update_user(user_data, user_id, session)
-
-    assert e.value.status_code == status.HTTP_404_NOT_FOUND
-    assert str(e.value.detail) == "User not found."
+    assert e.value.detail == UserNotFoundExeption.detail

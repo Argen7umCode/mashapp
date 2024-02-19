@@ -5,6 +5,11 @@ from fastapi import HTTPException, status
 from api.actions.user import _get_user
 from api.schemas.user import GetUserRequest
 from api.schemas.relationships import ShowUserWithRel
+from exeptions.exeptions import (
+    MashupNotFoundExeption,
+    UnknownFieldsExeption,
+    UserNotFoundExeption,
+)
 from tests.db_funcs import insert_into_db
 from db.models import User, Mashup
 
@@ -81,10 +86,9 @@ async def test_get_user_when_user_isnt_exists(_get_test_db: AsyncSession):
     user_id = 1
     request = GetUserRequest(id=user_id)
     async with _get_test_db as session:
-        with pytest.raises(HTTPException) as e:
+        with pytest.raises(UserNotFoundExeption) as e:
             got_user = await _get_user(request, session)
-    assert e.value.status_code == status.HTTP_404_NOT_FOUND
-    assert str(e.value.detail) == "User not found."
+    assert e.value.detail == UserNotFoundExeption.detail
 
 
 @pytest.mark.asyncio
@@ -92,10 +96,9 @@ async def test_get_user_when_mashup_isnt_exists(_get_test_db: AsyncSession):
     mashup_id = 1
     request = GetUserRequest(mashup_id=mashup_id)
     async with _get_test_db as session:
-        with pytest.raises(HTTPException) as e:
+        with pytest.raises(MashupNotFoundExeption) as e:
             got_user = await _get_user(request, session)
-    assert e.value.status_code == status.HTTP_404_NOT_FOUND
-    assert str(e.value.detail) == f"Mashup with id {mashup_id} not found."
+    assert e.value.detail == MashupNotFoundExeption.detail
 
 
 @pytest.mark.asyncio
@@ -103,24 +106,6 @@ async def test_get_user_with_empty_body(_get_test_db: AsyncSession):
     async with _get_test_db as session:
         request = GetUserRequest()
 
-        with pytest.raises(HTTPException) as e:
+        with pytest.raises(UnknownFieldsExeption) as e:
             got_user = await _get_user(request, session)
-    assert e.value.status_code == status.HTTP_400_BAD_REQUEST
-    assert str(e.value.detail) == "Unknown fields in body data"
-
-@pytest.mark.asyncio
-async def test_test(_get_test_db: AsyncSession, prepare_valid_test_data: dict[str, str]):
-    test_user = User(**prepare_valid_test_data)
-    test_user.id = 1
-    test_mashup = Mashup(
-        id=1,
-        name="test",
-        is_active=True,
-        audio=bytes(1),
-        user=test_user,
-        user_id=test_user.id,
-    )
-    test_user.mashups.append(test_mashup)
-    print(test_user)
-    print(test_user.to_schema_without_rel())
-    print(test_user.to_schema_with_rel())
+        assert e.value.detail == UnknownFieldsExeption.detail

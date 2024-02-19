@@ -9,6 +9,7 @@ from sqlalchemy import and_, select
 
 from fastapi import HTTPException, status
 from api.schemas.user import CreateUserRequest, ShowUser
+from exeptions.exeptions import UserAlreadyExistsExeption
 from db.models import User
 
 
@@ -78,9 +79,6 @@ async def test_duplicate_data(_get_test_db, prepare_valid_test_data):
 
         response = await _create_user(user_data, session)
 
-        with pytest.raises(HTTPException) as e:
+        with pytest.raises(UserAlreadyExistsExeption) as e:
             second_response = await _create_user(user_data, session)
-        assert e.value.status_code == status.HTTP_400_BAD_REQUEST
-        assert (
-            str(e.value.detail) == "User with same username or email is already exists"
-        )
+        assert e.value.detail == UserAlreadyExistsExeption.detail
