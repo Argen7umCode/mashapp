@@ -9,7 +9,7 @@ from sqlalchemy import and_, select
 
 from fastapi import HTTPException, status
 from api.schemas.user import CreateUserRequest, ShowUser
-from exeptions.exeptions import UserAlreadyExistsExeption
+from exceptions.exceptions import UserAlreadyExistsExeption
 from db.models import User
 
 

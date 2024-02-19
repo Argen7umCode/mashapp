@@ -11,7 +11,7 @@ class CreateMashupRequest(BaseModel):
     name: str
     audio: bytes
     user_id: int
-    sources: List[int]
+    sources_ids: List[int]
 
 
 class GetMashupRequest(BaseModel):

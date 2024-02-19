@@ -15,6 +15,12 @@ from api.schemas.user import (
 )
 from api.schemas.user import UpdatedUserResponse, DeleteUserResponse, DeleteUserRequest
 from api.actions.common import remove_none_values_from_dict
+from exceptions.exceptions import (
+    MashupNotFoundExeption,
+    UserAlreadyExistsExeption,
+    UserNotFoundExeption,
+    UnknownFieldsExeption,
+)
 
 
 async def _create_user(body: CreateUserRequest, session: AsyncSession) -> ShowUser:
@@ -29,11 +35,9 @@ async def _create_user(body: CreateUserRequest, session: AsyncSession) -> ShowUs
             hashed_password=body.hashed_password,
         )
     except IntegrityError:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="User with same username or email is already exists",
-        )
-    return user.to_schema_without_rel()
+        raise UserAlreadyExistsExeption()
+    else:
+        return user.to_schema_without_rel()
 
 
 async def _get_user_by_id(user_id: int, session: AsyncSession) -> User:
@@ -47,10 +51,7 @@ async def _get_user_by_mashup_id(mashup_id: int, session: AsyncSession) -> User:
     mashup_dal = MashupDAL(session)
     mashup = await mashup_dal.get_by_id(mashup_id)
     if mashup is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Mashup with id {mashup_id} not found.",
-        )
+        raise MashupNotFoundExeption()
     user_dal = UserDAL(session)
     return await user_dal.get_user_by_mashup_id(mashup_id=mashup_id)
 
@@ -70,15 +71,11 @@ async def _get_user(body: GetUserRequest, session: AsyncSession) -> ShowUser:
     elif mashup_id := body.mashup_id:
         user = await _get_user_by_mashup_id(mashup_id, session)
     else:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Unknown fields in body data",
-        )
+        raise UnknownFieldsExeption()
 
     if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User not found."
-        )
+        raise UserNotFoundExeption()
+
     rel = user.to_schema_with_rel()
     return rel
 
@@ -90,9 +87,7 @@ async def _delete_user(
     user_id = await user_dal.delete_user(body.id)
 
     if user_id is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User not found."
-        )
+        raise UserNotFoundExeption()
 
     return DeleteUserResponse(id=user_id)
 
@@ -106,14 +101,9 @@ async def _update_user(
     try:
         user_id = await user_dal.update_user(user_id, **cleared_data)
     except ValueError:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Unknown fields in body data",
-        )
+        raise UnknownFieldsExeption()
 
     if user_id is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User not found."
-        )
+        raise UserNotFoundExeption()
 
     return UpdatedUserResponse(id=user_id)

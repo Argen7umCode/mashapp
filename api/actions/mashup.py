@@ -3,6 +3,7 @@ from typing import List, Optional, Union
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status
+from api.schemas.relationships import ShowMashupWithRel
 
 from db.dals import MashupDAL, UserDAL, SourceDAL
 from api.schemas.mashup import (
@@ -13,11 +14,17 @@ from api.schemas.mashup import (
 )
 from api.schemas.mashup import UpdateMashupRequest, UpdateMashupResponse
 from api.schemas.mashup import DeleteMahsupResponse, DeleteMashupRequest
+from exceptions.exceptions import (
+    UnknownFieldsExeption,
+    UserNotFoundExeption,
+    MashupNotFoundExeption,
+    SourceNotFoundExeption,
+)
 
 
 async def _create_mashup(
     body: CreateMashupRequest, session: AsyncSession
-) -> ShowMashup:
+) -> ShowMashupWithRel:
     user_id = body.user_id
     user_dal = UserDAL(session)
     user = await user_dal.is_exists(user_id)
@@ -25,28 +32,26 @@ async def _create_mashup(
     audio = body.audio
 
     if not user:
-        ...  # обработка того что пользователя нет в базе
+        raise UserNotFoundExeption
 
-    getted_sources_id = body.sources
+    getted_sources_ids = body.sources_ids
     source_dal = SourceDAL(session)
     sources = []
-    for source_id in getted_sources_id:
+    for source_id in getted_sources_ids:
         source = await source_dal.is_exists(source_id)
         if source:
             sources.append(source)
         else:
-            ...  # оработка того что сурс отсутсвует в базе
-
-    if sources == []:
-        ...  # Обработка того что сурсов нет в базе
+            SourceNotFoundExeption()
 
     mashup_dal = MashupDAL(session)
     created_mashup = await mashup_dal.create_mashup(
-        name=body.name, audio=audio, user_id=user_id, sources=sources
+        name=body.name, 
+        audio=audio, 
+        user_id=user_id, 
+        user=user, 
+        sources=sources
     )
-
-    user_dal.update_user(user_id=User.id, mashups=user.mashups + [created_mashup])
-
     return created_mashup.to_schema_with_rel()
 
 

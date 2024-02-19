@@ -1,7 +1,7 @@
 from typing import Any
 
 import pytest
-from exeptions.exeptions import UserNotFoundExeption
+from exceptions.exceptions import UserNotFoundExeption
 from tests.db_funcs import insert_into_db
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession

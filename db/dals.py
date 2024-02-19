@@ -95,12 +95,14 @@ class UserDAL(DAL):
 
 class MashupDAL(DAL):
     async def create_mashup(
-        self, name: str, audio: bytes, user_id: int, sources: list
+        self, name: str, audio: bytes, user_id: int, user: User, sources: list
     ) -> Mashup:
         new_mashup = Mashup(
+            id=None,
             name=name,
             audio=audio,
             user_id=user_id,
+            user=user,
             is_active=True,
             sources=sources,
         )

@@ -5,7 +5,7 @@ from fastapi import HTTPException, status
 from api.actions.user import _get_user
 from api.schemas.user import GetUserRequest
 from api.schemas.relationships import ShowUserWithRel
-from exeptions.exeptions import (
+from exceptions.exceptions import (
     MashupNotFoundExeption,
     UnknownFieldsExeption,
     UserNotFoundExeption,

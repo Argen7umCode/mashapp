@@ -5,7 +5,7 @@ from fastapi import HTTPException, status
 
 from api.actions.user import _delete_user
 from api.schemas.user import DeleteUserRequest, DeleteUserResponse
-from exeptions.exeptions import UserAlreadyExistsExeption, UserNotFoundExeption
+from exceptions.exceptions import UserAlreadyExistsExeption, UserNotFoundExeption
 from tests.db_funcs import insert_into_db
 from db.models import User
 
