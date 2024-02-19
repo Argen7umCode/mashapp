@@ -3,7 +3,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status
 
 from api.actions.user import _get_user
-from api.schemas.user import GetUserRequest, ShowUser
+from api.schemas.user import GetUserRequest
+from api.schemas.relationships import ShowUserWithRel
 from tests.db_funcs import insert_into_db
 from db.models import User, Mashup
 
@@ -24,7 +25,7 @@ async def test_get_user_by_id(
     assert got_user.username == prepare_valid_test_data["username"]
     assert got_user.email == prepare_valid_test_data["email"]
     assert got_user.is_active == prepare_valid_test_data["is_active"]
-    assert isinstance(got_user, ShowUser)
+    assert isinstance(got_user, ShowUserWithRel)
 
 
 @pytest.mark.asyncio
@@ -43,7 +44,7 @@ async def test_get_user_by_email(
     assert got_user.username == prepare_valid_test_data["username"]
     assert got_user.email == prepare_valid_test_data["email"]
     assert got_user.is_active == prepare_valid_test_data["is_active"]
-    assert isinstance(got_user, ShowUser)
+    assert isinstance(got_user, ShowUserWithRel)
 
 
 @pytest.mark.asyncio
@@ -72,7 +73,7 @@ async def test_get_user_by_mashup_id(
     assert got_user.username == prepare_valid_test_data["username"]
     assert got_user.email == prepare_valid_test_data["email"]
     assert got_user.is_active == prepare_valid_test_data["is_active"]
-    assert isinstance(got_user, ShowUser)
+    assert isinstance(got_user, ShowUserWithRel)
 
 
 @pytest.mark.asyncio
@@ -106,3 +107,20 @@ async def test_get_user_with_empty_body(_get_test_db: AsyncSession):
             got_user = await _get_user(request, session)
     assert e.value.status_code == status.HTTP_400_BAD_REQUEST
     assert str(e.value.detail) == "Unknown fields in body data"
+
+@pytest.mark.asyncio
+async def test_test(_get_test_db: AsyncSession, prepare_valid_test_data: dict[str, str]):
+    test_user = User(**prepare_valid_test_data)
+    test_user.id = 1
+    test_mashup = Mashup(
+        id=1,
+        name="test",
+        is_active=True,
+        audio=bytes(1),
+        user=test_user,
+        user_id=test_user.id,
+    )
+    test_user.mashups.append(test_mashup)
+    print(test_user)
+    print(test_user.to_schema_without_rel())
+    print(test_user.to_schema_with_rel())

@@ -24,13 +24,8 @@ class GetMashupRequest(BaseModel):
 class ShowMashup(BaseModel):
     id: int
     name: str
-    audio_id: int
+    audio: bytes
     is_active: bool
-
-
-class ShowMashupWithRel(ShowMashup):
-    user: "ShowUser"
-    sources: "List[ShowSource]"
 
 
 class UpdateMashupRequest(BaseModel):

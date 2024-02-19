@@ -11,8 +11,11 @@ from api.schemas.user import (
     ShowUser,
     GetUserRequest,
     UpdateUserRequest,
+    UpdatedUserResponse,
+    DeleteUserResponse,
+    DeleteUserRequest,
 )
-from api.schemas.user import UpdatedUserResponse, DeleteUserResponse, DeleteUserRequest
+from api.schemas.relationships import ShowUserWithRel
 
 
 user_router = APIRouter(prefix="/users", tags=["users"])
@@ -23,8 +26,8 @@ async def create_user(body: CreateUserRequest, db: AsyncSession = Depends(get_db
     return await _create_user(body, db)
 
 
-@user_router.get("/", response_model=ShowUser)
-async def get_user_by_id(
+@user_router.get("/", response_model=ShowUserWithRel)
+async def get_user(
     body: GetUserRequest, db: AsyncSession = Depends(get_db)
 ) -> ShowUser:
     return await _get_user(body, db)

@@ -8,10 +8,16 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.orm import Mapped, MappedAsDataclass
 from sqlalchemy.orm import DeclarativeBase
 
-from api.schemas.user import ShowUser, ShowUserWithRel
-from api.schemas.mashup import ShowMashup, ShowMashupWithRel
-from api.schemas.source import ShowSource, ShowSourceWithRel
-from api.schemas.author import ShowAuthor, ShowAuthorWithRel
+from api.schemas.user import ShowUser
+from api.schemas.mashup import ShowMashup
+from api.schemas.source import ShowSource
+from api.schemas.author import ShowAuthor
+from api.schemas.relationships import (
+    ShowUserWithRel,
+    ShowMashupWithRel,
+    ShowSourceWithRel,
+    ShowAuthorWithRel,
+)
 from api.schemas import BaseModel
 
 
@@ -59,7 +65,7 @@ class User(MappedAsDataclass, Base, SchemaMixin):
     hashed_password: Mapped[nonnull_str]
 
     mashups: Mapped[Optional[List["Mashup"]]] = relationship(
-        default_factory=lambda: [], back_populates="user"
+        default_factory=lambda: [], back_populates="user", lazy="subquery"
     )
 
     def to_schema_without_rel(self) -> ShowUser:
@@ -84,6 +90,7 @@ class Mashup(MappedAsDataclass, Base, SchemaMixin):
         back_populates="mashups",
         secondary="mashup_source_table",
         default_factory=lambda: [],
+        lazy="subquery",
     )
 
     def to_schema_without_rel(self) -> ShowUser:
@@ -106,6 +113,7 @@ class Source(MappedAsDataclass, Base, SchemaMixin):
         back_populates="sources",
         secondary="mashup_source_table",
         default_factory=lambda: [],
+        lazy="subquery",
     )
 
     def to_schema_without_rel(self) -> ShowSource:
@@ -122,7 +130,7 @@ class Author(MappedAsDataclass, Base, SchemaMixin):
     name: Mapped[nonnull_str]
     is_active: Mapped[is_active]
     sources: Mapped[List["Source"]] = relationship(
-        back_populates="author", default_factory=lambda: []
+        back_populates="author", default_factory=lambda: [], lazy="subquery"
     )
 
     def to_schema_without_rel(self) -> ShowAuthor:

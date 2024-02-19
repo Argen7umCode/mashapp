@@ -29,10 +29,6 @@ class ShowUser(BaseModel):
     is_active: bool
 
 
-class ShowUserWithRel(ShowUser):
-    mashups: "List[ShowMashup]"
-
-
 class UpdatedUserResponse(BaseModel):
     id: int
 

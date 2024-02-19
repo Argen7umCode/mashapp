@@ -79,8 +79,8 @@ async def _get_user(body: GetUserRequest, session: AsyncSession) -> ShowUser:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found."
         )
-
-    return user.to_schema_without_rel()
+    rel = user.to_schema_with_rel()
+    return rel
 
 
 async def _delete_user(
@@ -93,7 +93,7 @@ async def _delete_user(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found."
         )
-    
+
     return DeleteUserResponse(id=user_id)
 
 
@@ -102,7 +102,7 @@ async def _update_user(
 ) -> UpdatedUserResponse:
     user_dal = UserDAL(session)
     cleared_data = remove_none_values_from_dict(dict(new_data))
-    
+
     try:
         user_id = await user_dal.update_user(user_id, **cleared_data)
     except ValueError:

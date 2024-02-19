@@ -19,11 +19,6 @@ class ShowSource(BaseModel):
     is_active: bool
 
 
-class ShowSourceWithRel(ShowSource):
-    mashups: "List[ShowMashup]"
-    author: "ShowAuthor"
-
-
 class GetSourceRequest(BaseModel):
     id: Optional[int]
     name: Optional[str]

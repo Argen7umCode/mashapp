@@ -18,10 +18,6 @@ class ShowAuthor(BaseModel):
     is_active: bool
 
 
-class ShowAuthorWithRel(ShowAuthor):
-    sources: "List[ShowSource]"
-
-
 class GetAuthorRequest(BaseModel):
     id: Optional[int]
     name: Optional[str]
