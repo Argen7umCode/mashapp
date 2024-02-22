@@ -45,7 +45,7 @@ async def _get_test_db() -> Generator:
     engine = create_async_engine(
         config.TEST_DB_PATH,
         future=True,
-        echo=True,
+        echo=False,
     )
     session = sessionmaker(
         engine, expire_on_commit=False, class_=AsyncSession, autoflush=True

@@ -36,3 +36,20 @@ async def create_test_author(
     author = Author(**author_data)
     await insert_into_db(author, session)
     return author
+
+
+async def create_test_user_author_and_source(
+    user_data: dict[str, str],
+    author_data: dict[str, str],
+    source_data: dict[str, str],
+    session: AsyncSession,
+) -> tuple[User, Author, Source]:
+    user = await create_test_user(user_data, session)
+    author = await create_test_author(author_data, session)
+
+    source_data = source_data | {
+        "author_id": author.id,
+        "author": author,
+    }
+    source = await create_test_source(source_data, session)
+    return user, author, source

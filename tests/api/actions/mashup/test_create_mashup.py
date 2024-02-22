@@ -1,36 +1,20 @@
 import pytest
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import HTTPException, status
 
 from api.actions.mashup import _create_mashup
-from api.schemas.mashup import CreateMashupRequest, ShowMashup
+from api.schemas.mashup import CreateMashupRequest
 from api.schemas.relationships import ShowMashupWithRel
 from exceptions.exceptions import SourceNotFoundException, UserNotFoundException
 from tests.db_funcs import (
-    insert_into_db,
     create_test_source,
     create_test_user,
     create_test_author,
+    create_test_user_author_and_source
 )
-from db.models import Author, Source, User, Mashup
+from db.models import Mashup
+from tests.db_funcs import create_test_user_author_and_source
 
-
-async def create_test_user_author_and_source(
-    user_data: dict[str, str],
-    author_data: dict[str, str],
-    source_data: dict[str, str],
-    session: AsyncSession,
-) -> tuple[User, Author, Source]:
-    user = await create_test_user(user_data, session)
-    author = await create_test_author(author_data, session)
-
-    source_data = source_data | {
-        "author_id": author.id,
-        "author": author,
-    }
-    source = await create_test_source(source_data, session)
-    return user, author, source
 
 
 @pytest.mark.asyncio
@@ -106,9 +90,7 @@ async def test_creating_mashup_with_non_existent_user(
 async def test_creating_mashup_with_non_existent_source(
     _get_test_db: AsyncSession,
     prepare_valid_test_user_data: dict[str, str],
-    prepare_valid_test_mashup_data: dict[str, str],
-    prepare_valid_test_source_data: dict[str, str],
-    prepare_valid_test_author_data: dict[str, str],
+    prepare_valid_test_mashup_data: dict[str, str]
 ) -> None:
     async with _get_test_db as session:
         user = await create_test_user(prepare_valid_test_user_data, session)
@@ -126,3 +108,5 @@ async def test_creating_mashup_with_non_existent_source(
         query = select(Mashup)
         response = (await session.execute(query)).scalar_one_or_none()
         assert response is None
+
+

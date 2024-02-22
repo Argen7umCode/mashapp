@@ -11,7 +11,7 @@ class QuerySearchMaker:
         query = select(self.model)
         for field, row in self.fields_to_get.items():
             if from_data := data.get(field):
-                query.where(row == from_data)
+                query = query.where(row == from_data)
         return query
 
 

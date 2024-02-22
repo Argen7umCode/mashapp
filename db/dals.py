@@ -123,21 +123,11 @@ class MashupDAL(DAL):
         return await self._create(new_mashup)
 
     async def get(self, data: dict[str, str]):
-        self._get(data, Mashup)
+        return await self._get(data, Mashup)
 
     async def get_by_id(self, mashup_id: int) -> Mashup:
         return await self._get_by_id(mashup_id, Mashup)
-
-    async def get_mashups(self, data: dict) -> List[Mashup]:
-        query = select(Mashup)
-        if name := data.get("name"):
-            query.where(Mashup.name == name)
-        if user_id := data.get("user_id"):
-            query.where(Mashup.user_id == user_id)
-        if source_id := data.get("source_id"):
-            query.where(Mashup.source_id == source_id)
-        return await self._make_query_and_get_all(query)
-
+    
     async def delete_mashup(self, mashup_id: int) -> Union[int, None]:
         query = (
             update(Mashup)
@@ -170,7 +160,7 @@ class SourceDAL(DAL):
         return await self._get_by_id(source_id, Source)
 
     async def get(self, data: dict[str, str]) -> List[Source]:
-        await self._get(data, Source)
+        return await  self._get(data, Source)
 
     async def delete_source(self, source_id: int) -> Union[int, None]:
         query = (
@@ -200,7 +190,7 @@ class AuthorDAL(DAL):
         return await self._get_by_id(author_id, Author)
 
     async def get(self, data: dict[str, str]) -> List[Author]:
-        await self._get(data, Author)
+        return await  self._get(data, Author)
 
     async def delete_author(self, author_id: int) -> Union[int, None]:
         query = (
