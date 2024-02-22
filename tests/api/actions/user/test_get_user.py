@@ -2,13 +2,13 @@ import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status
 
-from api.actions.user import _get_user
+from api.actions.user import _get_users
 from api.schemas.user import GetUserRequest
 from api.schemas.relationships import ShowUserWithRel
 from exceptions.exceptions import (
-    MashupNotFoundExeption,
-    UnknownFieldsExeption,
-    UserNotFoundExeption,
+    MashupNotFoundException,
+    UnknownFieldsException,
+    UserNotFoundException,
 )
 from tests.db_funcs import insert_into_db
 from db.models import User, Mashup
@@ -24,7 +24,7 @@ async def test_get_user_by_id(
         user_id = test_user.id
 
         request = GetUserRequest(id=user_id)
-        got_user = await _get_user(request, session)
+        got_user = (await _get_users(request, session))[0]
 
     assert got_user.name == prepare_valid_test_data["name"]
     assert got_user.username == prepare_valid_test_data["username"]
@@ -43,7 +43,7 @@ async def test_get_user_by_email(
         user_email = test_user.email
 
         request = GetUserRequest(email=user_email)
-        got_user = await _get_user(request, session)
+        got_user = (await _get_users(request, session))[0]
 
     assert got_user.name == prepare_valid_test_data["name"]
     assert got_user.username == prepare_valid_test_data["username"]
@@ -72,7 +72,7 @@ async def test_get_user_by_mashup_id(
 
         mashup_id = test_mashup.id
         request = GetUserRequest(mashup_id=mashup_id)
-        got_user = await _get_user(request, session)
+        got_user = (await _get_users(request, session))[0]
 
     assert got_user.name == prepare_valid_test_data["name"]
     assert got_user.username == prepare_valid_test_data["username"]
@@ -86,9 +86,9 @@ async def test_get_user_when_user_isnt_exists(_get_test_db: AsyncSession):
     user_id = 1
     request = GetUserRequest(id=user_id)
     async with _get_test_db as session:
-        with pytest.raises(UserNotFoundExeption) as e:
-            got_user = await _get_user(request, session)
-    assert e.value.detail == UserNotFoundExeption.detail
+        with pytest.raises(UserNotFoundException) as e:
+            got_user = await _get_users(request, session)
+    assert e.value.detail == UserNotFoundException.detail
 
 
 @pytest.mark.asyncio
@@ -96,16 +96,15 @@ async def test_get_user_when_mashup_isnt_exists(_get_test_db: AsyncSession):
     mashup_id = 1
     request = GetUserRequest(mashup_id=mashup_id)
     async with _get_test_db as session:
-        with pytest.raises(MashupNotFoundExeption) as e:
-            got_user = await _get_user(request, session)
-    assert e.value.detail == MashupNotFoundExeption.detail
+        with pytest.raises(UserNotFoundException) as e:
+            got_user = await _get_users(request, session)
+    assert e.value.detail == UserNotFoundException.detail
 
 
 @pytest.mark.asyncio
 async def test_get_user_with_empty_body(_get_test_db: AsyncSession):
     async with _get_test_db as session:
         request = GetUserRequest()
-
-        with pytest.raises(UnknownFieldsExeption) as e:
-            got_user = await _get_user(request, session)
-        assert e.value.detail == UnknownFieldsExeption.detail
+        with pytest.raises(UnknownFieldsException) as e:
+            got_user = await _get_users(request, session)
+        assert e.value.detail == UnknownFieldsException.detail
