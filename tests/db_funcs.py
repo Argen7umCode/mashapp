@@ -8,9 +8,7 @@ async def insert_into_db(data: Base, session: AsyncSession) -> None:
     await session.flush()
 
 
-async def create_test_user(
-    user_data: dict[str, str], session: AsyncSession
-) -> User:
+async def create_test_user(user_data: dict[str, str], session: AsyncSession) -> User:
     user = User(**user_data)
     await insert_into_db(user, session)
     return user
