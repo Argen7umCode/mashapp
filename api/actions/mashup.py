@@ -55,12 +55,12 @@ async def _get_mashups(
 ) -> List[ShowMashupWithRel]:
     mashup_dal = MashupDAL(session)
 
-    if mashup_id := body.get("mashup_id"):
+    if mashup_id := body.id:
         getted_mashups = [(await mashup_dal.get_by_id(mashup_id))]
     else:
-        getted_mashups = await mashup_dal.get_mashups(body, mashup_dal)
+        getted_mashups = await mashup_dal.get(dict(body))
         if getted_mashups == []:
-            raise UnknownFieldsException
+            raise MashupNotFoundException
 
     return [mashup.to_schema_with_rel() for mashup in getted_mashups]
 
