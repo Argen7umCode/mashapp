@@ -175,11 +175,7 @@ async def test_get_many_mashup_by_user_id(
 
             assert len(getted_mashups) == len(user.mashups)
             for getted_mashup, db_mashup in zip(getted_mashups, mashups[i*3:(i+1)*3]):
-                pprint(f'{dict(getted_mashup)}')
-                print()
-                pprint(f'{dict(db_mashup.to_schema_with_rel())}')
-                print()
-                print()
+
                 assert getted_mashup.id == db_mashup.id
                 assert getted_mashup.name == db_mashup.name
                 assert dict(getted_mashup.user) == dict(db_mashup.user.to_schema_without_rel())
