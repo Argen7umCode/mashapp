@@ -1,3 +1,4 @@
+from typing import List
 from fastapi import APIRouter
 from fastapi import Depends
 from fastapi import HTTPException, status
@@ -5,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.session import get_db
 
-from api.actions.user import _create_user, _get_user, _update_user, _delete_user
+from api.actions.user import _create_user, _get_users, _update_user, _delete_user
 from api.schemas.user import (
     CreateUserRequest,
     ShowUser,
@@ -27,10 +28,10 @@ async def create_user(body: CreateUserRequest, db: AsyncSession = Depends(get_db
 
 
 @user_router.get("/", response_model=ShowUserWithRel)
-async def get_user(
+async def get_users(
     body: GetUserRequest, db: AsyncSession = Depends(get_db)
-) -> ShowUser:
-    return await _get_user(body, db)
+) -> List[ShowUserWithRel]:
+    return await _get_users(body, db)
 
 
 @user_router.patch("/", response_model=UpdatedUserResponse)

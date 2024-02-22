@@ -1,9 +1,10 @@
-from typing import Optional, Union
+from typing import List, Optional, Union
 
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException, status
+from api.schemas.relationships import ShowUserWithRel
 
 from db.dals import UserDAL, MashupDAL
 from db.models import User
@@ -16,10 +17,10 @@ from api.schemas.user import (
 from api.schemas.user import UpdatedUserResponse, DeleteUserResponse, DeleteUserRequest
 from api.actions.common import remove_none_values_from_dict
 from exceptions.exceptions import (
-    MashupNotFoundExeption,
-    UserAlreadyExistsExeption,
-    UserNotFoundExeption,
-    UnknownFieldsExeption,
+    MashupNotFoundException,
+    UserAlreadyExistsException,
+    UserNotFoundException,
+    UnknownFieldsException,
 )
 
 
@@ -35,7 +36,7 @@ async def _create_user(body: CreateUserRequest, session: AsyncSession) -> ShowUs
             hashed_password=body.hashed_password,
         )
     except IntegrityError:
-        raise UserAlreadyExistsExeption()
+        raise UserAlreadyExistsException()
     else:
         return user.to_schema_without_rel()
 
@@ -47,37 +48,20 @@ async def _get_user_by_id(user_id: int, session: AsyncSession) -> User:
     )
 
 
-async def _get_user_by_mashup_id(mashup_id: int, session: AsyncSession) -> User:
-    mashup_dal = MashupDAL(session)
-    mashup = await mashup_dal.get_by_id(mashup_id)
-    if mashup is None:
-        raise MashupNotFoundExeption()
-    user_dal = UserDAL(session)
-    return await user_dal.get_user_by_mashup_id(mashup_id=mashup_id)
-
-
-async def _get_user_by_email(email: str, session: AsyncSession) -> User:
-    user_dal = UserDAL(session)
-    return await user_dal.get_user_by_email(
-        email=email,
-    )
-
-
-async def _get_user(body: GetUserRequest, session: AsyncSession) -> ShowUser:
+async def _get_users(
+    body: GetUserRequest, session: AsyncSession
+) -> List[ShowUserWithRel]:
     if user_id := body.id:
-        user = await _get_user_by_id(user_id, session)
-    elif email := body.email:
-        user = await _get_user_by_email(email, session)
-    elif mashup_id := body.mashup_id:
-        user = await _get_user_by_mashup_id(mashup_id, session)
+        users = [await _get_user_by_id(user_id, session)]
     else:
-        raise UnknownFieldsExeption()
+        clean_body = remove_none_values_from_dict(dict(body))
+        user_dal = UserDAL(session)
+        users = await user_dal.get(clean_body)
+    
+    if not all(users) or len(users) == 0:
+        raise UserNotFoundException()
 
-    if user is None:
-        raise UserNotFoundExeption()
-
-    rel = user.to_schema_with_rel()
-    return rel
+    return [user.to_schema_with_rel() for user in users]
 
 
 async def _delete_user(
@@ -87,7 +71,7 @@ async def _delete_user(
     user_id = await user_dal.delete_user(body.id)
 
     if user_id is None:
-        raise UserNotFoundExeption()
+        raise UserNotFoundException()
 
     return DeleteUserResponse(id=user_id)
 
@@ -101,9 +85,9 @@ async def _update_user(
     try:
         user_id = await user_dal.update_user(user_id, **cleared_data)
     except ValueError:
-        raise UnknownFieldsExeption()
+        raise UnknownFieldsException()
 
     if user_id is None:
-        raise UserNotFoundExeption()
+        raise UserNotFoundException()
 
     return UpdatedUserResponse(id=user_id)
