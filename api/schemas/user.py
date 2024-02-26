@@ -1,23 +1,28 @@
-from api.schemas import TunedModel, UUID, EmailStr 
+from typing import List, TYPE_CHECKING
+
+from api.schemas import EmailStr
 from api.schemas import Optional, BaseModel, constr
 
 
-class CreateUserRequest(TunedModel):
-    user_id: UUID
+if TYPE_CHECKING:
+    from api.schemas.mashup import ShowMashup
+
+
+class CreateUserRequest(BaseModel):
     name: str
     username: str
     email: EmailStr
     hashed_password: str
 
 
-class GetUserRequest(TunedModel):
-    user_id: Optional[UUID] = None
+class GetUserRequest(BaseModel):
+    id: Optional[int] = None
     email: Optional[EmailStr] = None
-    mashup_id: Optional[UUID] = None
+    mashup_id: Optional[int] = None
 
 
-class ShowUser(TunedModel):
-    user_id: UUID
+class ShowUser(BaseModel):
+    id: int
     name: str
     username: str
     email: EmailStr
@@ -25,19 +30,18 @@ class ShowUser(TunedModel):
 
 
 class UpdatedUserResponse(BaseModel):
-    updated_user_id: UUID
+    id: int
 
 
 class UpdateUserRequest(BaseModel):
-    name: Optional[constr(min_length=1)]
-    surname: Optional[constr(min_length=1)]
-    email: Optional[EmailStr]
+    name: Optional[constr(min_length=1)] = None
+    username: Optional[constr(min_length=1)] = None
+    email: Optional[EmailStr] = None
 
 
 class DeleteUserResponse(BaseModel):
-    deleted_user_id: UUID
+    id: int
 
 
 class DeleteUserRequest(BaseModel):
-    user_id: UUID
-
+    id: int

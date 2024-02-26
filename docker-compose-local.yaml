@@ -10,6 +10,21 @@ services:
       - 5432:5432
     volumes: 
       - db:/var/lib/postgresql/data
+    networks:
+      - custom
+
+  db_test:
+    image: postgres:14.1-alpine
+    environment:
+      - POSTGRES_USER=postgres_test
+      - POSTGRES_PASSWORD=postgres_test
+      - POSTGRES_DB=postgres_test
+    ports:
+      - "5430:5432"
+    networks:
+      - custom
+    depends_on:
+      - db
 
   pgadmin:
     image: dpage/pgadmin4
@@ -23,6 +38,12 @@ services:
       - pgadmin:/var/lib/pgadmin
     depends_on:
       - db
+    networks:
+      - custom
+
+networks:
+  custom:
+    driver: bridge
 
 volumes:
   db:

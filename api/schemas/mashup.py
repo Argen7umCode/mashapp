@@ -1,46 +1,45 @@
-from typing import List
-from api.schemas import TunedModel, UUID 
+from typing import TYPE_CHECKING, List
 from api.schemas import Optional, BaseModel
 
 
+if TYPE_CHECKING:
+    from api.schemas.user import ShowUser
+    from api.schemas.source import ShowSource
 
-class CreateMashupRequest(TunedModel):
+
+class CreateMashupRequest(BaseModel):
     name: str
     audio: bytes
-    user_id: UUID
-    sources: List[UUID]
+    user_id: int
+    sources_ids: List[int]
 
 
-class GetMashupRequest(TunedModel):
-    mashup_id: Optional[UUID] = None
+class GetMashupRequest(BaseModel):
+    id: Optional[int] = None
     name: Optional[str] = None
-    user_id: Optional[UUID] = None
-    source_id: Optional[UUID] = None
+    user_id: Optional[int] = None
+    source_id: Optional[int] = None
 
 
-class ShowMashup(TunedModel):
-    mashup_id: UUID
+class ShowMashup(BaseModel):
+    id: int
     name: str
-    audio_id: UUID
+    audio: bytes
     is_active: bool
-    user_id: UUID
-    sources_ids: List[UUID]
-
-class ShowMashups(TunedModel):
-    mashups: List[ShowMashup]
-
 
 
 class UpdateMashupRequest(BaseModel):
     name: str
     audio: bytes
 
+
 class UpdateMashupResponse(BaseModel):
-    updated_mashup_id: UUID
+    id: int
+
 
 class DeleteMashupRequest(BaseModel):
-    mashup_id: UUID
+    id: int
 
 
 class DeleteMahsupResponse(BaseModel):
-    deleted_mashup_id: UUID
+    id: int
